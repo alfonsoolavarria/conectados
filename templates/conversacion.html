@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Conversación{% endblock %}
+{% block content %}
+<!-- Cabecera de conversación -->
+<section class="flex flex-col gap-4">
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors duration-200" href="{% url 'mensajeria' %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Volver a mensajería
+        </a>
+<div class="flex items-center gap-4 bg-surface-container border border-surface-variant rounded-xl p-4">
+<div class="w-12 h-12 rounded-full border {% if contact_member and contact_member.role == 'leader' %}border-secondary-container/50 text-secondary-container{% else %}border-primary/40 text-primary{% endif %} flex items-center justify-center shrink-0">
+<span class="font-label-sm text-label-sm">{{ contact_member.full_name|slice:":1" }}</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ contact_member.full_name }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">{{ contact_member.get_role_display }} · Cabaña {{ contact_member.cabin.number }}</span>
+</div>
+</div>
+</section>
+<!-- Hilo de mensajes -->
+<section class="flex flex-col gap-3 max-h-[55vh] overflow-y-auto pr-1">
+{% for msg in messages %}
+{% if msg.sender == request.user %}
+<div class="self-end flex flex-col items-end max-w-[80%]">
+<div class="bg-primary-container text-on-primary-container rounded-2xl rounded-br-sm px-4 py-2.5 font-body-md text-body-md">{{ msg.body }}</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">{{ msg.created_at|date:"H:i" }}</span>
+</div>
+{% else %}
+<div class="self-start flex flex-col items-start max-w-[80%]">
+<div class="bg-surface-container-high text-on-surface rounded-2xl rounded-bl-sm px-4 py-2.5 font-body-md text-body-md">{{ msg.body }}</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">{{ msg.created_at|date:"H:i" }}</span>
+</div>
+{% endif %}
+{% empty %}
+<div class="bg-surface-container border border-surface-variant rounded-xl p-8 text-center">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant">chat_bubble_outline</span>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Aún no hay mensajes. Escribe el primero.</p>
+</div>
+{% endfor %}
+</section>
+<!-- Formulario de envío -->
+<section>
+<form method="post" class="flex items-center gap-2">
+{% csrf_token %}
+<input class="flex-1 bg-surface-dim border border-surface-container-high rounded-full py-3 px-4 text-on-surface font-body-md text-body-md placeholder:text-outline-variant focus:outline-none focus:border-primary-container/60 transition-colors" name="body" type="text" placeholder="Escribe un mensaje..." autocomplete="off" required/>
+<button class="w-12 h-12 shrink-0 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-[0_0_20px_rgba(230,25,46,0.25)] hover:shadow-[0_0_30px_rgba(230,25,46,0.5)] active:scale-95 transition-all duration-200" type="submit" aria-label="Enviar">
+<span class="material-symbols-outlined">send</span>
+</button>
+</form>
+</section>
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

@@ -1,0 +1,57 @@
+<article class="bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.5)]" data-cabin>
+<div class="circuit-line"></div>
+<div class="p-5 md:p-6">
+<button type="button" class="w-full flex flex-wrap items-center justify-between gap-4 text-left group" onclick="toggleCabin(this)" aria-expanded="true">
+<div class="flex items-center gap-4">
+<span class="w-12 h-12 rounded-xl border flex items-center justify-center font-display-lg text-display-lg {% if genero == "F" %}bg-secondary-container/15 border-secondary-container/40 text-secondary-container{% else %}bg-primary-container/15 border-primary-container/40 text-primary-container{% endif %}">{{ cab.cabin.number }}</span>
+<div class="flex flex-col">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Cabaña {{ cab.cabin.number }} <span class="text-on-surface-variant text-headline-lg-mobile">· {{ cab.cabin.get_gender_display_es }}</span></h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1 uppercase tracking-widest">{{ cab.cabin.age_range|default:"—" }} {% if cab.cabin.location %}· {{ cab.cabin.location }}{% endif %}</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Líderes</span>
+<div class="flex flex-wrap gap-2 justify-end">
+{% for lider in cab.leaders %}
+<span class="inline-flex items-center gap-1.5 bg-surface-container-high border border-outline-variant rounded-full px-3 py-1 font-label-sm text-label-sm text-secondary-fixed">
+<span class="material-symbols-outlined text-[14px]">shield_person</span>{{ lider.full_name }}
+</span>
+{% endfor %}
+</div>
+</div>
+<div class="flex flex-col items-center gap-1">
+<span class="w-9 h-9 rounded-lg bg-surface-container-high border border-surface-variant flex items-center justify-center group-hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined transition-transform duration-300 rotate-0 {% if genero == "F" %}text-secondary-container{% else %}text-primary{% endif %}">expand_more</span>
+</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">{{ cab.campers|length }} acamp.</span>
+</div>
+</div>
+</button>
+<div class="campers-panel">
+{% if cab.campers %}
+<div class="flex flex-col gap-3 mt-2">
+{% for camper in cab.campers %}
+<div class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 {% if genero == "F" %}border-secondary-container/50 text-secondary-container{% else %}border-primary/40 text-primary{% endif %}">
+<span class="font-label-sm text-label-sm">{{ camper.member.full_name|slice:":1" }}</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-body-md text-body-md text-on-surface truncate">{{ camper.member.full_name }}</span>
+<div class="flex items-center gap-3 mt-1">
+<div class="h-2 flex-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full {% if camper.completed %}bg-gradient-to-r from-primary-container to-secondary-container{% else %}bg-surface-variant{% endif %} rounded-full" style="width: {% widthratio camper.completed camper.total 100 %}%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">{{ camper.completed }}/{{ camper.total }}</span>
+<span class="font-label-sm text-label-sm {% if camper.completed %}text-secondary-container{% else %}text-on-surface-variant{% endif %} shrink-0">{% widthratio camper.completed camper.total 100 %}%</span>
+</div>
+</div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Sin acampantes activos.</p>
+{% endif %}
+</div>
+</div>
+</article>

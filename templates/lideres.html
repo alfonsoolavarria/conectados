@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Dashboard de Líderes{% endblock %}
+{% block content %}
+<!-- Encabezado -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl text-secondary-container">leaderboard</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Dashboard de Líderes</h2>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">{{ month_name }} · Progreso de los acampantes</p>
+</section>
+<!-- Resumen -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-primary-container">holiday_village</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ cabins|length }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Cabañas</span>
+</div>
+<div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-secondary-container">group</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ total_campers }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Acampantes</span>
+</div>
+<div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-primary">support_agent</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ total_leaders }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Líderes</span>
+</div>
+<div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-secondary-container">event_available</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ num_days }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Días del mes</span>
+</div>
+</section>
+<!-- Cabañas: dos columnas por género -->
+<section class="flex flex-col gap-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+<!-- Columna Chicas -->
+<div class="flex flex-col gap-4">
+<header class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-container">female</span>
+</span>
+<div class="flex flex-col">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Chicas</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Cabañas A · B</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary-fixed bg-surface-container-high border border-surface-variant rounded-full px-3 py-1">{{ cabinas_fem|length }} cabañas</span>
+</header>
+{% for cab in cabinas_fem %}
+{% include "partials/cabin_card.html" with genero="F" %}
+{% endfor %}
+</div>
+<!-- Columna Chicos -->
+<div class="flex flex-col gap-4">
+<header class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-xl bg-primary-container/15 border border-primary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container">male</span>
+</span>
+<div class="flex flex-col">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Chicos</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Cabañas Molino · Trencito</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary-fixed bg-surface-container-high border border-surface-variant rounded-full px-3 py-1">{{ cabinas_masc|length }} cabañas</span>
+</header>
+{% for cab in cabinas_masc %}
+{% include "partials/cabin_card.html" with genero="M" %}
+{% endfor %}
+</div>
+</div>
+</section>
+<script>
+function toggleCabin(btn) {
+    const article = btn.closest("[data-cabin]");
+    const panel = article.querySelector(".campers-panel");
+    panel.classList.toggle("hidden");
+    const chevron = btn.querySelector(".material-symbols-outlined");
+    if (chevron) {
+        chevron.classList.toggle("rotate-180");
+        chevron.classList.toggle("rotate-0");
+    }
+    btn.setAttribute("aria-expanded", !panel.classList.contains("hidden"));
+}
+</script>
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Conectados 3.0 - Login</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Sora:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config defined by Brand System -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#131313",
+                        "inverse-on-surface": "#313030",
+                        "secondary-container": "#fabd00",
+                        "on-secondary-fixed": "#261a00",
+                        "primary-container": "#e6192e",
+                        "primary-fixed": "#ffdad7",
+                        "on-surface-variant": "#e7bcb9",
+                        "on-primary-fixed-variant": "#930016",
+                        "on-secondary-container": "#6a4e00",
+                        "on-background": "#e5e2e1",
+                        "on-error": "#690005",
+                        "secondary-fixed-dim": "#fabd00",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#c00020",
+                        "outline": "#ae8885",
+                        "surface-container": "#201f1f",
+                        "on-tertiary-container": "#fffdfd",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-highest": "#353534",
+                        "surface-bright": "#3a3939",
+                        "on-secondary-fixed-variant": "#5b4300",
+                        "surface-dim": "#131313",
+                        "on-primary-fixed": "#410005",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "surface-container-high": "#2a2a2a",
+                        "on-primary": "#68000c",
+                        "on-tertiary-fixed-variant": "#464747",
+                        "surface-variant": "#353534",
+                        "error": "#ffb4ab",
+                        "on-primary-container": "#fffcff",
+                        "tertiary-fixed-dim": "#c7c6c6",
+                        "surface-container-low": "#1c1b1b",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#ffb3ae",
+                        "secondary": "#ffdf9e",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-surface": "#e5e2e1",
+                        "primary-fixed-dim": "#ffb3ae",
+                        "tertiary-container": "#757575",
+                        "on-tertiary": "#303031",
+                        "surface-tint": "#ffb3ae",
+                        "outline-variant": "#5d3f3d",
+                        "tertiary-fixed": "#e4e2e2",
+                        "secondary-fixed": "#ffdf9e",
+                        "background": "#131313",
+                        "tertiary": "#c7c6c6",
+                        "on-secondary": "#3f2e00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "margin-desktop": "64px",
+                        "max-width": "1280px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Sora"],
+                        "body-md": ["Geist"],
+                        "display-lg": ["Sora"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Sora"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Atmosphere Patterns */
+        .digital-grid {
+            background-image: 
+                linear-gradient(rgba(230, 25, 46, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(230, 25, 46, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-position: center center;
+        }
+        
+        .pulse-glow {
+            animation: pulse-op 4s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-op {
+            0% { opacity: 0.1; }
+            100% { opacity: 0.3; }
+        }
+
+        .input-glow:focus-within {
+            box-shadow: 0 0 12px rgba(230, 25, 46, 0.3);
+            border-color: theme('colors.primary-container');
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen relative font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Atmospheric Background -->
+<div class="fixed inset-0 z-0 pointer-events-none digital-grid"></div>
+<div class="fixed top-1/4 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-primary-container rounded-full blur-[120px] pulse-glow z-0"></div>
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile py-4 w-full fixed top-0 z-50 bg-background/80 backdrop-blur-md">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined text-primary-container dark:text-primary">signal_cellular_alt</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold tracking-tighter text-on-background dark:text-on-background">CONECTADOS 3.0</h1>
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-surface-variant transition-colors duration-200 group">
+<span class="material-symbols-outlined text-on-surface-variant dark:text-on-surface-variant group-hover:text-secondary-container transition-colors duration-300">qr_code_scanner</span>
+</button>
+</header>
+<!-- Main Content Canvas (Transactional flow -> No BottomNav) -->
+<main class="relative z-10 flex flex-col items-center justify-center min-h-screen px-margin-mobile pt-24 pb-12 w-full max-w-md mx-auto">
+<!-- Hero Logo Section -->
+<div class="flex flex-col items-center justify-center mb-10 w-full animate-[fadeIn_0.8s_ease-out]">
+<div class="relative">
+<div class="absolute inset-0 bg-primary-container blur-[40px] opacity-20 rounded-full"></div>
+<img alt="Conectados 3.0 High-Voltage Youth Camp Logo" class="w-48 h-auto object-contain relative z-10 drop-shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClqclTjRazNcVi_e_rGn7TtfF5vuHJ3BAtPu9OyN9lZ1SIrLW8iyN8B9akFGwxq8oY1L0s7eT0IBSWZcX43PRoVlo040BlmLCg5Z8J2fe3uTec0h0QgZc_XEN0_ROtrjdDDyhBBQFH266GpvxZKZOojiI2BNf9PNmvmoeWr8B_nCJrkGNomamTpR39hjHwRjFA8NXxHh6mTgKVE_XHlCZ1BVEEj4gZeSCvDvYBr390EBCGKCrjQbKYpcYVqtK4hKFmsQ"/>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-4 tracking-widest uppercase opacity-70">Camp Access Terminal</p>
+</div>
+<!-- Glassmorphism Login Card -->
+<div class="relative w-full">
+<!-- Neon Border Glow Effect -->
+<div class="absolute -inset-0.5 bg-gradient-to-br from-primary-container via-surface-container to-secondary-container rounded-xl blur opacity-30"></div>
+<div class="relative bg-surface-container-low/70 backdrop-blur-2xl border border-surface-container-high rounded-xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+<form class="flex flex-col gap-5" method="post" novalidate>
+{% csrf_token %}
+{% if form.non_field_errors %}
+<div class="bg-error-container/20 border border-error-container rounded-lg px-4 py-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[18px]">error</span>
+<p class="font-body-md text-body-md text-on-error-container">{{ form.non_field_errors.0 }}</p>
+</div>
+{% endif %}
+<!-- Input Group: Identifier -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1 flex items-center gap-2" for="identifier">
+<span class="material-symbols-outlined text-[16px] opacity-70">badge</span>
+                            Camp Code or Email
+                        </label>
+<div class="relative input-glow transition-all duration-300 rounded-lg">
+<input class="w-full bg-surface-dim border border-surface-container-high rounded-lg py-3 px-4 text-on-surface font-body-md text-body-md placeholder:text-outline-variant focus:outline-none focus:border-transparent transition-colors" id="identifier" name="identifier" placeholder="e.g. HVYC-2024" type="text" required/>
+</div>
+</div>
+<!-- Input Group: Password -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1 flex items-center gap-2" for="password">
+<span class="material-symbols-outlined text-[16px] opacity-70">lock</span>
+                            Password
+                        </label>
+<div class="relative input-glow transition-all duration-300 rounded-lg">
+<input class="w-full bg-surface-dim border border-surface-container-high rounded-lg py-3 px-4 text-on-surface font-body-md text-body-md placeholder:text-outline-variant focus:outline-none focus:border-transparent transition-colors" id="password" name="password" placeholder="••••••••" type="password" required/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="mt-4 w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm font-bold uppercase tracking-wider py-4 rounded-lg flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(230,25,46,0.25)] hover:shadow-[0_0_30px_rgba(230,25,46,0.5)] active:scale-[0.98] transition-all duration-200" type="submit">
+<span>ENTRAR</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</form>
+<!-- Help Link -->
+<div class="mt-6 text-center">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors duration-200 inline-flex items-center gap-1 border-b border-transparent hover:border-secondary-container pb-0.5" href="#">
+<span class="material-symbols-outlined text-[14px]">help</span>
+                        Need help?
+                    </a>
+</div>
+</div>
+</div>
+<!-- Footer Badge -->
+<div class="mt-12 flex items-center justify-center gap-2 opacity-50 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">memory</span>
+<span>Powered by Technology</span>
+</div>
+</main>
+</body></html>

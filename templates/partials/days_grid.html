@@ -1,0 +1,13 @@
+<div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-3 md:gap-4">
+{% for day in days %}
+<form action="{% url 'toggle_day' %}" method="post" class="relative flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-300 cursor-pointer overflow-hidden group aspect-square {% if day.completed %}bg-primary-container/10 border-primary-container/50 shadow-[inset_0_0_20px_rgba(230,25,46,0.1)] hover:bg-primary-container/20{% elif day.is_today %}bg-surface-container-high border-secondary-container glow-active hover:bg-surface-bright{% else %}bg-surface-container-low border-surface-variant hover:border-outline-variant hover:bg-surface-container{% endif %}">
+{% csrf_token %}
+<input type="hidden" name="day" value="{{ day.date|date:'Y-m-d' }}"/>
+<button type="submit" class="absolute inset-0 flex flex-col items-center justify-center bg-transparent" aria-label="Marcar día {{ day.number }}">
+<span class="font-label-sm text-label-sm z-10 {% if day.completed %}text-primary-fixed{% elif day.is_today %}text-secondary-fixed{% else %}text-on-surface-variant group-hover:text-on-surface{% endif %}">{{ day.number }}</span>
+<span class="material-symbols-outlined text-2xl z-10 transition-transform duration-300 group-hover:scale-110 group-active:scale-90 mt-2 {% if day.completed %}text-primary-container{% elif day.is_today %}text-surface-variant group-hover:text-secondary-container{% else %}text-surface-variant group-hover:text-outline-variant{% endif %}" {% if day.completed %}style="font-variation-settings: 'FILL' 1;"{% endif %}>{{ day.completed|yesno:"check_circle,radio_button_unchecked" }}</span>
+</button>
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+</form>
+{% endfor %}
+</div>

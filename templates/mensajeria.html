@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Mensajería{% endblock %}
+{% block content %}
+<!-- Botón regresar -->
+<section>
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors duration-200" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Regresar
+        </a>
+</section>
+<!-- Encabezado -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl text-secondary-container">forum</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Mensajería</h2>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Conversa con {{ request.user.member.role|yesno:"tus acampantes,tu líder de cabaña,tu líder de cabaña" }}</p>
+</section>
+<!-- Lista de conversaciones -->
+<section class="flex flex-col gap-3">
+{% for t in threads %}
+<a class="group bg-surface-container border border-surface-variant rounded-xl p-4 flex items-center gap-4 hover:border-secondary-container/60 hover:bg-surface-container-high transition-colors duration-300 active:scale-[0.99] transition-transform" href="{% url 'conversacion' t.contact.user.pk %}">
+<div class="w-12 h-12 rounded-full border {% if t.contact.role == 'leader' %}border-secondary-container/50 text-secondary-container{% else %}border-primary/40 text-primary{% endif %} flex items-center justify-center shrink-0">
+<span class="font-label-sm text-label-sm">{{ t.contact.full_name|slice:":1" }}</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-body-md text-body-md text-on-surface truncate">{{ t.contact.full_name }} <span class="font-label-sm text-label-sm text-on-surface-variant">· {{ t.contact.get_role_display }}</span></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate mt-0.5">{% if t.last %}{% if t.last.sender == request.user %}Tú: {% endif %}{{ t.last.body }}{% else %}Sin mensajes aún{% endif %}</span>
+</div>
+{% if t.unread %}
+<span class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-sm text-label-sm shrink-0">{{ t.unread }}</span>
+{% else %}
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary-container transition-colors duration-300">chevron_right</span>
+{% endif %}
+</a>
+{% empty %}
+<div class="bg-surface-container border border-surface-variant rounded-xl p-8 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">No tienes conversaciones disponibles.</p>
+</div>
+{% endfor %}
+</section>
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

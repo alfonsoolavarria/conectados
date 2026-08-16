@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Checklist{% endblock %}
+{% block content %}
+<!-- Profile Card Module -->
+<section class="bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl p-6 md:p-8 flex items-center gap-6 shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+<div class="circuit-line"></div>
+<div class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-primary/50 relative z-10 shrink-0">
+<img alt="{{ user.get_full_name|default:user.username }}" class="w-full h-full object-cover" data-alt="A close-up digital avatar portrait of a young adult camper in a dark, cyberpunk-inspired high-tech environment. The lighting is cinematic with subtle red and yellow edge-lighting against deep black shadows. The style is hyper-realistic with glowing neon accents reflecting in their eyes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaCiYnkrkO5CqAFWPwVD9-8bs6GHCndn7R44D5xq4TMyBs9bwBzIz8uwDibfxMihdgIPYNpu0UvckiTjRmg1RPAWJIRTPLHOti3hul-6cdPcJQzd6iPY5aKmcY_Fn6y6RsuEC8Skz8WfSuDnEghN6-nLagh9aQZpLrTTwAYCjwzyODmn4eetWaUAfuWstmuAmoXuN9PvE7OyFdCuu21Z120e6sSyZoxL-0982gIBctR8boIkF0346m"/>
+<div class="absolute inset-0 ring-inset ring-2 ring-primary-container rounded-full opacity-50 mix-blend-overlay"></div>
+</div>
+<div class="flex flex-col justify-center relative z-10">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">{{ user.get_full_name|default:user.username }}</h2>
+<div class="inline-flex items-center gap-2 bg-surface-container-high border border-outline-variant rounded-full px-3 py-1 w-fit">
+<div class="w-2 h-2 rounded-full bg-primary-container animate-pulse glow-active"></div>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Campista Activo</span>
+</div>
+</div>
+<div class="absolute right-0 top-0 h-full w-1/3 opacity-10 pointer-events-none mix-blend-screen hidden md:block">
+<div class="bg-cover bg-center w-full h-full" data-alt="A subtle, abstract geometric pattern consisting of interlocking digital grid lines and concentric circular signals, rendered in glowing red and yellow against a pure black background. The image should feel like a high-tech circuit board overlay." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBu-xVymTyDt0jWb-0bp8xBQlowVJrb5l3ChK520lWaD83WHtqpRnPpnGi9JuA73PRJjPqwYyHLcEnywE88ETTFh45wHmM8bFlKAazfmLdYMvaRm4RQin8Qs14exEvyLszhJvdYwsjIsqp_iQ75QXjv8N5WQFsP6KL1rikrQV6KySdLv4T76M29DrBy5DfLwYkiXHSH6TuRtRdPOW6qip1p24IAp85JQtm3_D2UexNcW53t16SQhqGh')"></div>
+</div>
+</section>
+<!-- Menu Module -->
+<section class="flex flex-col gap-6">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">menu_book</span>
+                Mi Espacio
+            </h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<a class="group bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl p-6 flex items-center gap-4 hover:border-secondary-container/60 transition-colors duration-300 active:scale-[0.98] transition-transform" href="{% url 'estadisticas' %}">
+<span class="material-symbols-outlined text-3xl text-secondary-container group-hover:scale-110 transition-transform duration-300">bar_chart</span>
+<div class="flex flex-col">
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Mis Estadísticas</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1 uppercase tracking-widest">Tu progreso y racha</span>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-secondary-container transition-colors duration-300">arrow_forward</span>
+</a>
+<a class="group bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl p-6 flex items-center gap-4 hover:border-primary-container/60 transition-colors duration-300 active:scale-[0.98] transition-transform" href="{% url 'mensajeria' %}">
+<span class="material-symbols-outlined text-3xl text-primary-container group-hover:scale-110 transition-transform duration-300">forum</span>
+<div class="flex flex-col">
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Mensajería</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1 uppercase tracking-widest">Habla con tu líder</span>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-primary-container transition-colors duration-300">arrow_forward</span>
+</a>
+</div>
+</section>
+<!-- Monthly Tracker Module -->
+<section class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">fact_check</span>
+                    Mis Desafíos Diarios
+                </h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-3 py-1 rounded-full border border-surface-variant">{{ month_name }}</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Toca un día para marcarlo como completado.</p>
+{% include "partials/days_grid.html" %}
+</section>
+{% endblock %}

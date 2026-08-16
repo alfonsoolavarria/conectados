@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Mis Estadísticas{% endblock %}
+{% block content %}
+<!-- Botón regresar -->
+<section>
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors duration-200" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Regresar
+        </a>
+</section>
+<section class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">bar_chart</span>
+                    Mis Estadísticas
+                </h3>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container border border-surface-variant rounded-xl p-6 flex flex-col items-center gap-2 text-center">
+<span class="material-symbols-outlined text-3xl text-primary-container">check_circle</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ completed_month }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Días este mes</span>
+</div>
+<div class="bg-surface-container border border-surface-variant rounded-xl p-6 flex flex-col items-center gap-2 text-center">
+<span class="material-symbols-outlined text-3xl text-secondary-container">local_fire_department</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ streak }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Racha de días</span>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Progreso de {{ month_name }}</span>
+<span class="font-label-sm text-label-sm text-primary">{{ percent }}%</span>
+</div>
+<div class="w-full h-3 bg-surface-container-high rounded-full overflow-hidden border border-surface-variant">
+<div class="h-full bg-gradient-to-r from-primary-container to-secondary-container rounded-full transition-all duration-500" style="width: {{ percent }}%;"></div>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-surface-container border border-surface-variant rounded-xl p-4 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-secondary-container">event_available</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ completed_month }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Completados</span>
+</div>
+<div class="bg-surface-container border border-surface-variant rounded-xl p-4 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-primary-container">event_busy</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ pending }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Pendientes</span>
+</div>
+<div class="bg-surface-container border border-surface-variant rounded-xl p-4 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-primary">auto_awesome</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ total_completed }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Total general</span>
+</div>
+</div>
+</section>
+{% endblock %}
