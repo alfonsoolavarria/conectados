@@ -1,42 +1,64 @@
 {% extends "base.html" %}
-{% block title %}Conectados 3.0 - Códigos QR de Líderes{% endblock %}
+{% block title %}Conectados 3.0 - Códigos QR{% endblock %}
 {% block content %}
 <!-- Encabezado -->
 <section class="flex flex-col gap-4">
 <div class="flex flex-wrap items-center justify-between gap-4">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-3xl text-secondary-container">qr_code_2</span>
-<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Accesos QR de Líderes</h2>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Códigos QR de Acceso</h2>
 </div>
 <button type="button" onclick="window.print()" class="no-print inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-5 py-2.5 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200">
 <span class="material-symbols-outlined text-[18px]">print</span>
-            Imprimir
+            Imprimir todo
         </button>
 </div>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Cada líder escanea su código con la cámara, le aparecerá el login con su usuario ya escrito y solo debe ingresar su contraseña. No es un acceso automático: el QR no contiene credenciales.</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Cada persona escanea su código con la cámara, le aparecerá el login con su usuario ya escrito y solo debe ingresar su contraseña.</p>
 </section>
-<!-- Tarjetas por cabaña -->
-<section class="flex flex-col gap-8">
+<!-- Líderes -->
 {% for c in cabinas %}
-<div class="flex flex-col gap-3">
+{% if c.leaders %}
+<section class="flex flex-col gap-3">
 <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
-<span class="material-symbols-outlined text-secondary-container">holiday_village</span>
-                    Cabaña {{ c.cabin.number }}
-                </h3>
+<span class="material-symbols-outlined text-secondary-container">shield_person</span>
+                Cabaña {{ c.cabin.number }} — Líderes
+            </h3>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 print:grid-cols-2">
 {% for l in c.leaders %}
 <div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-3 text-center">
 <img class="w-40 h-40 rounded-lg bg-white p-2" src="{{ l.qr }}" alt="QR {{ l.member.full_name }}"/>
 <div class="flex flex-col gap-1">
 <span class="font-body-md text-body-md text-on-surface font-semibold">{{ l.member.full_name }}</span>
-<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Líder · {{ l.username }}</span>
+<span class="font-label-sm text-label-sm text-secondary-container uppercase tracking-widest">Líder · {{ l.username }}</span>
 </div>
 </div>
 {% endfor %}
 </div>
-</div>
-{% endfor %}
 </section>
+{% endif %}
+{% endfor %}
+<!-- Acampantes -->
+{% for c in cabinas %}
+{% if c.campers %}
+<section class="flex flex-col gap-3">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">group</span>
+                Cabaña {{ c.cabin.number }} — Acampantes
+            </h3>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 print:grid-cols-3">
+{% for a in c.campers %}
+<div class="bg-surface-container border border-surface-variant rounded-xl p-4 flex flex-col items-center gap-2 text-center">
+<img class="w-32 h-32 rounded-lg bg-white p-2" src="{{ a.qr }}" alt="QR {{ a.member.full_name }}"/>
+<div class="flex flex-col gap-0.5">
+<span class="font-body-md text-body-md text-on-surface font-semibold text-sm">{{ a.member.full_name }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">{{ a.username }}</span>
+</div>
+</div>
+{% endfor %}
+</div>
+</section>
+{% endif %}
+{% endfor %}
 <!-- Instrucciones -->
 <section class="no-print bg-surface-container border border-surface-variant rounded-xl p-6 flex flex-col gap-2">
 <div class="flex items-center gap-3">
@@ -44,9 +66,9 @@
 <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Cómo funciona</h3>
 </div>
 <ol class="flex flex-col gap-2 list-decimal list-inside font-body-md text-body-md text-on-surface-variant">
-<li>El QR solo precarga el <b class="text-on-surface">usuario</b> del líder en la página de acceso.</li>
-<li>El líder escribe su <b class="text-on-surface">contraseña</b> y entra a su panel.</li>
-<li>Si cambias el usuario o la URL del sitio, vuelve a imprimir: el código apunta al enlace actual.</li>
+<li>El QR solo precarga el <b class="text-on-surface">usuario</b> en la página de acceso.</li>
+<li>La persona escribe su <b class="text-on-surface">contraseña</b> y entra.</li>
+<li>Si es la primera vez, se le pedirá crear una contraseña nueva.</li>
 </ol>
 </section>
 {% endblock %}

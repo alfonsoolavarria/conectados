@@ -179,7 +179,7 @@
                         </label>
 <div class="relative input-glow transition-all duration-300 rounded-lg">
 <input class="w-full bg-surface-dim border border-surface-container-high rounded-lg py-3 px-4 text-on-surface font-body-md text-body-md placeholder:text-outline-variant focus:outline-none focus:border-transparent transition-colors" id="password" name="password" placeholder="••••••••" type="password" required/>
-<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary-container transition-colors" type="button">
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary-container transition-colors" type="button" onclick="var p=document.getElementById('password');var i=this.querySelector('span');if(p.type==='password'){p.type='text';i.textContent='visibility';}else{p.type='password';i.textContent='visibility_off';}">
 <span class="material-symbols-outlined text-[20px]">visibility_off</span>
 </button>
 </div>

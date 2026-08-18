@@ -179,11 +179,21 @@
 {% csrf_token %}
 <div class="flex flex-col gap-1.5">
 <label for="modal-new-pw" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Nueva contraseña</label>
-<input id="modal-new-pw" type="password" name="new_password" required minlength="6" autocomplete="new-password" class="w-full bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:border-secondary-container focus:outline-none focus:ring-1 focus:ring-secondary-container/50 transition-colors" placeholder="Mínimo 6 caracteres"/>
+<div class="relative">
+<input id="modal-new-pw" type="password" name="new_password" required minlength="6" autocomplete="new-password" class="w-full bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 pr-10 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:border-secondary-container focus:outline-none focus:ring-1 focus:ring-secondary-container/50 transition-colors" placeholder="Mínimo 6 caracteres"/>
+<button type="button" onclick="var p=document.getElementById('modal-new-pw');var i=this.querySelector('span');if(p.type==='password'){p.type='text';i.textContent='visibility';}else{p.type='password';i.textContent='visibility_off';}" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-secondary-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
 </div>
 <div class="flex flex-col gap-1.5">
 <label for="modal-confirm-pw" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Confirmar contraseña</label>
-<input id="modal-confirm-pw" type="password" required minlength="6" autocomplete="new-password" class="w-full bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:border-secondary-container focus:outline-none focus:ring-1 focus:ring-secondary-container/50 transition-colors" placeholder="Repite tu contraseña" oninput="document.getElementById('pw-submit').disabled = this.value !== document.getElementById('modal-new-pw').value"/>
+<div class="relative">
+<input id="modal-confirm-pw" type="password" required minlength="6" autocomplete="new-password" class="w-full bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 pr-10 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:border-secondary-container focus:outline-none focus:ring-1 focus:ring-secondary-container/50 transition-colors" placeholder="Repite tu contraseña" oninput="document.getElementById('pw-submit').disabled = this.value !== document.getElementById('modal-new-pw').value"/>
+<button type="button" onclick="var p=document.getElementById('modal-confirm-pw');var i=this.querySelector('span');if(p.type==='password'){p.type='text';i.textContent='visibility';}else{p.type='password';i.textContent='visibility_off';}" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-secondary-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
 </div>
 <div class="flex gap-3 mt-2">
 <button type="submit" id="pw-submit" disabled class="flex-1 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-4 py-3 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none">

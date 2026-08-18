@@ -344,8 +344,26 @@ def qr_lideres(request):
                     "url": url,
                 }
             )
-        if lideres:
-            cabinas.append({"cabin": cab, "leaders": lideres})
+        acampantes = []
+        for m in cab.members.filter(role="camper", is_active=True).exclude(
+            user__isnull=True
+        ).select_related("user"):
+            url = f"{site_url}/login/?username={m.user.username}"
+            qr = segno.make(url, error="m")
+            acampantes.append(
+                {
+                    "member": m,
+                    "username": m.user.username,
+                    "qr": qr.svg_data_uri(scale=4, border=1),
+                    "url": url,
+                }
+            )
+        if lideres or acampantes:
+            cabinas.append({
+                "cabin": cab,
+                "leaders": lideres,
+                "campers": acampantes,
+            })
     return render(request, "qr_print.html", {"cabinas": cabinas})
 
 
