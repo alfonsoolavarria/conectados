@@ -3,6 +3,7 @@ set -o errexit
 
 python manage.py migrate --no-input
 python manage.py import_campers
+python manage.py cleanup
 python manage.py create_accounts
 python manage.py create_superusers
 python manage.py export_users

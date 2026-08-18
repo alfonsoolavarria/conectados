@@ -137,7 +137,6 @@
   Roger Zapata              Acampante          roger.zapata              campo12345
   Stiven Arroyo             Acampante          stiven.arroyo             campo12345
   Yahir Martinez            Acampante          yahir.martinez            campo12345
-  Líder Prueba 8            Líder de cabaña    lider.cab8                campo12345
   Pachi                     Líder de cabaña    pachi                     campo12345
   Waldemar                  Líder de cabaña    waldemar                  campo12345
 
