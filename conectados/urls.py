@@ -14,5 +14,6 @@ urlpatterns = [
     path('mensajeria/<int:user_id>/', views.conversacion, name='conversacion'),
     path('desafio/<int:cabin_id>/', views.challenge, name='challenge'),
     path('qr/', views.qr_lideres, name='qr_lideres'),
+    path('cambiar-contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     path('', views.home, name='home'),
 ]

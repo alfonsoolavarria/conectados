@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Cambiar Contraseña{% endblock %}
+{% block content %}
+<section class="flex flex-col items-center justify-center min-h-[70vh] gap-8">
+<div class="flex flex-col items-center gap-4 text-center">
+<div class="w-16 h-16 rounded-2xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-container text-3xl">lock_reset</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Bienvenido, {{ user.get_full_name|default:user.username }}</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm">
+                Esta es tu primera vez. Si quieres, puedes cambiar tu contraseña ahora para algo más fácil de recordar.
+            </p>
+</div>
+<section class="bg-surface-container border border-surface-variant rounded-xl p-6 md:p-8 flex flex-col gap-6 w-full max-w-md">
+<form class="flex flex-col gap-4" method="post">
+{% csrf_token %}
+<label for="id_new_password" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Nueva contraseña</span>
+<input id="id_new_password" name="new_password" type="text" placeholder="Escribe lo que quieras" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50"/>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Puede ser lo que tú quieras, no hay restricciones.</span>
+</label>
+<div class="flex gap-3">
+<button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-6 py-3 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined text-[18px]">check</span>
+                    Guardar
+                </button>
+<button type="submit" name="skip" value="1" class="flex-1 inline-flex items-center justify-center gap-2 bg-surface-container border border-outline-variant text-on-surface-variant font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-6 py-3 hover:border-on-surface-variant/60 active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined text-[18px]">skip_next</span>
+                    Omitir
+                </button>
+</div>
+</form>
+</section>
+</section>
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

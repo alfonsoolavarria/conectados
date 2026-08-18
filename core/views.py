@@ -1,7 +1,9 @@
 import calendar
+import os
 from datetime import date, datetime, timedelta
 
 import segno
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
@@ -44,6 +46,12 @@ class CustomLoginView(LoginView):
         if username:
             initial["identifier"] = username
         return initial
+
+    def get_success_url(self):
+        member = getattr(self.request.user, "member", None)
+        if member is not None and member.must_change_password:
+            return reverse("cambiar_contrasena")
+        return reverse("home")
 
 
 def _mes_dias(user, ref_date=None):
@@ -310,15 +318,14 @@ def challenge(request, cabin_id):
 
 @login_required
 def qr_lideres(request):
+    site_url = os.getenv("SITE_URL", request.build_absolute_uri("/")).rstrip("/")
     cabinas = []
     for cab in Cabin.objects.prefetch_related("members").all():
         lideres = []
         for m in cab.members.filter(role="leader", is_active=True).exclude(
             user__isnull=True
         ).select_related("user"):
-            url = request.build_absolute_uri(
-                reverse("login") + f"?username={m.user.username}"
-            )
+            url = f"{site_url}/login/?username={m.user.username}"
             qr = segno.make(url, error="m")
             lideres.append(
                 {
@@ -331,3 +338,21 @@ def qr_lideres(request):
         if lideres:
             cabinas.append({"cabin": cab, "leaders": lideres})
     return render(request, "qr_print.html", {"cabinas": cabinas})
+
+
+@login_required
+def cambiar_contrasena(request):
+    member = getattr(request.user, "member", None)
+    if request.method == "POST":
+        nueva = request.POST.get("new_password", "").strip()
+        if nueva:
+            request.user.set_password(nueva)
+            request.user.save()
+            from django.contrib.auth import login as auth_login
+            auth_login(request, request.user, backend="core.backends.UsernameOrEmailBackend")
+        if member is not None:
+            member.must_change_password = False
+            member.save(update_fields=["must_change_password"])
+        messages.success(request, "Contraseña actualizada." if nueva else "Continuaste sin cambiar.")
+        return HttpResponseRedirect(reverse("home"))
+    return render(request, "cambiar_contrasena.html")

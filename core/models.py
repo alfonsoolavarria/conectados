@@ -99,6 +99,9 @@ class Member(models.Model):
         max_length=1, choices=GENEROS, verbose_name="Género"
     )
     is_active = models.BooleanField(default=True, verbose_name="Asiste")
+    must_change_password = models.BooleanField(
+        default=True, verbose_name="Debe cambiar contraseña"
+    )
 
     class Meta:
         constraints = [
