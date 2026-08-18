@@ -47,12 +47,19 @@
 {% if cab.campers %}
 <div class="flex flex-col gap-3 mt-2">
 {% for camper in cab.campers %}
-<div class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 flex items-center gap-4">
-<div class="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 {% if genero == "F" %}border-secondary-container/50 text-secondary-container{% else %}border-primary/40 text-primary{% endif %}">
+<div class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 flex items-center gap-4 {% if camper.is_leader %}border-l-4 border-l-secondary-container{% endif %}">
+<div class="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 {% if camper.is_leader %}border-secondary-container/70 bg-secondary-container/15 text-secondary-container{% elif genero == "F" %}border-secondary-container/50 text-secondary-container{% else %}border-primary/40 text-primary{% endif %}">
 <span class="font-label-sm text-label-sm">{{ camper.member.full_name|slice:":1" }}</span>
 </div>
 <div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-2">
 <span class="font-body-md text-body-md text-on-surface truncate">{{ camper.member.full_name }}</span>
+{% if camper.is_leader %}
+<span class="inline-flex items-center gap-1 bg-secondary-container/15 border border-secondary-container/40 rounded-full px-2 py-0.5 font-label-sm text-label-sm text-secondary-container shrink-0">
+<span class="material-symbols-outlined text-[12px]">shield_person</span>Líder
+</span>
+{% endif %}
+</div>
 <div class="flex items-center gap-3 mt-1">
 <div class="h-2 flex-1 bg-surface-container-high rounded-full overflow-hidden">
 <div class="h-full {% if camper.completed %}bg-gradient-to-r from-primary-container to-secondary-container{% else %}bg-surface-variant{% endif %} rounded-full" style="width: {% widthratio camper.completed camper.total 100 %}%;"></div>

@@ -38,6 +38,18 @@
 <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Días del mes</span>
 </div>
 </section>
+<!-- Mis Desafíos Diarios (Líder) -->
+<section class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">fact_check</span>
+                Mis Desafíos Diarios
+            </h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-3 py-1 rounded-full border border-surface-variant">{{ month_name }}</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Toca un día para marcarlo como completado.</p>
+{% include "partials/days_grid.html" with days=my_days.days %}
+</section>
 <!-- Cabañas: dos columnas por género -->
 <section class="flex flex-col gap-8">
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">

@@ -110,19 +110,21 @@ def _dashboard_lideres(request):
     }
     cabanas_data = []
     for cab in Cabin.objects.prefetch_related("members").all():
-        campers = [
-            {
-                "member": m,
-                "completed": completados_por_user.get(m.user_id, 0),
-                "total": num_dias,
-            }
-            for m in cab.members.filter(role="camper", is_active=True)
-        ]
+        miembros_con_progreso = []
+        for m in cab.members.filter(is_active=True).select_related("user"):
+            miembros_con_progreso.append(
+                {
+                    "member": m,
+                    "completed": completados_por_user.get(m.user_id, 0),
+                    "total": num_dias,
+                    "is_leader": m.role == "leader",
+                }
+            )
         cabanas_data.append(
             {
                 "cabin": cab,
                 "leaders": cab.members.filter(role="leader"),
-                "campers": campers,
+                "campers": miembros_con_progreso,
                 "num_days": num_dias,
                 "challenge": cab.challenges.order_by("-created_at").first(),
                 "es_mia": member.cabin_id == cab.pk,
@@ -130,6 +132,7 @@ def _dashboard_lideres(request):
         )
     cabinas_masc = [c for c in cabanas_data if c["cabin"].gender == "M"]
     cabinas_fem = [c for c in cabanas_data if c["cabin"].gender == "F"]
+    my_days = _mes_dias(request.user)
     return render(
         request,
         "lideres.html",
@@ -138,9 +141,15 @@ def _dashboard_lideres(request):
             "cabinas_masc": cabinas_masc,
             "cabinas_fem": cabinas_fem,
             "month_name": MESES_ES[hoy.month],
-            "total_campers": sum(len(c["campers"]) for c in cabanas_data),
+            "total_campers": sum(
+                1
+                for c in cabanas_data
+                for m in c["campers"]
+                if not m["is_leader"]
+            ),
             "total_leaders": sum(len(c["leaders"]) for c in cabanas_data),
             "num_days": num_dias,
+            "my_days": my_days,
         },
     )
 
@@ -318,6 +327,9 @@ def challenge(request, cabin_id):
 
 @login_required
 def qr_lideres(request):
+    member = getattr(request.user, "member", None)
+    if member is None or member.role != "leader":
+        return HttpResponseRedirect(reverse("home"))
     site_url = os.getenv("SITE_URL", request.build_absolute_uri("/")).rstrip("/")
     cabinas = []
     for cab in Cabin.objects.prefetch_related("members").all():
