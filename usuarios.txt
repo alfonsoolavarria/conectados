@@ -7,7 +7,7 @@
   Usuario:  admin
   Nombre:   admin
   Contraseña: admin12345
-  Rol:      Superusuario (Líder de cabaña, Cabaña 1)
+  Rol:      Superusuario (Líder de cabaña, Cabaña 6)
 
 
 --- Cabaña 1 (Mujeres) ---
@@ -29,7 +29,6 @@
   Sophia Azocar             Acampante          sophia.azocar             campo12345
   Yeriagnnys Rosales        Acampante          yeriagnnys.rosales        campo12345
   Yeximar Poche             Acampante          yeximar.poche             campo12345
-  Alfonso Olavarria         Líder de cabaña    admin                     campo12345
   Génesis M. Zaret          Líder de cabaña    genesis.m..zaret          campo12345
 
 --- Cabaña 2 (Chicos) ---
@@ -111,7 +110,7 @@
   Ludwing Martinez          Acampante          ludwing.martinez          campo12345
   Samuel Monserrat          Acampante          samuel.monserrat          campo12345
   Santiago Raymond          Acampante          santiago.raymond          campo12345
-  Alfonso                   Líder de cabaña    alfonso                   campo12345
+  Alfonso                   Líder de cabaña    admin                     campo12345
   Josué                     Líder de cabaña    josue                     campo12345
   Miguel                    Líder de cabaña    miguel                    campo12345
 
