@@ -73,6 +73,7 @@ class Command(BaseCommand):
                 )
 
             if member.user_id != user.id:
+                Member.objects.filter(user=user).update(user=None)
                 member.user = user
                 member.must_change_password = False
                 member.save(update_fields=["user", "must_change_password"])
