@@ -48,9 +48,6 @@ class CustomLoginView(LoginView):
         return initial
 
     def get_success_url(self):
-        member = getattr(self.request.user, "member", None)
-        if member is not None and member.must_change_password:
-            return reverse("cambiar_contrasena")
         return reverse("home")
 
 

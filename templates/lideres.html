@@ -39,16 +39,21 @@
 </div>
 </section>
 <!-- Mis Desafíos Diarios (Líder) -->
-<section class="flex flex-col gap-6">
-<div class="flex items-center justify-between">
-<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<section class="flex flex-col gap-4">
+<button type="button" class="w-full flex items-center justify-between gap-4 bg-surface-container border border-surface-variant rounded-xl p-5 text-left group hover:border-secondary-container/40 transition-colors" onclick="toggleMyChallenges()" aria-expanded="false" id="my-challenges-toggle">
+<div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-secondary-container">fact_check</span>
-                Mis Desafíos Diarios
-            </h3>
-<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-3 py-1 rounded-full border border-surface-variant">{{ month_name }}</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Mis Desafíos Diarios</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-3 py-1 rounded-full border border-surface-variant">{{ month_name }}</span>
 </div>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Toca un día para marcarlo como completado.</p>
+<span class="w-9 h-9 rounded-lg bg-surface-container-high border border-surface-variant flex items-center justify-center group-hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined transition-transform duration-300 rotate-0" id="my-challenges-chevron">expand_more</span>
+</span>
+</button>
+<div class="hidden" id="my-challenges-panel">
+<p class="font-label-sm text-label-sm text-on-surface-variant px-1">Toca un día para marcarlo como completado.</p>
 {% include "partials/days_grid.html" with days=my_days.days %}
+</div>
 </section>
 <!-- Cabañas: dos columnas por género -->
 <section class="flex flex-col gap-8">
@@ -102,6 +107,13 @@ function toggleCabin(btn) {
         chevron.classList.toggle("rotate-0");
     }
     btn.setAttribute("aria-expanded", !panel.classList.contains("hidden"));
+}
+function toggleMyChallenges() {
+    const panel = document.getElementById("my-challenges-panel");
+    const chevron = document.getElementById("my-challenges-chevron");
+    panel.classList.toggle("hidden");
+    chevron.classList.toggle("rotate-180");
+    chevron.classList.toggle("rotate-0");
 }
 </script>
 {% endblock %}

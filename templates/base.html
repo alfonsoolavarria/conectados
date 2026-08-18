@@ -160,4 +160,48 @@
 </div>
 </nav>
 {% endblock bottom_nav %}
+{% if show_password_modal %}
+<!-- Modal Cambio de Contraseña -->
+<div id="pw-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+<div class="bg-surface-container border border-secondary-container/40 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-[0_0_40px_rgba(250,189,0,0.15)] relative overflow-hidden">
+<div class="circuit-line"></div>
+<div class="relative z-10 flex flex-col gap-5">
+<div class="flex items-center gap-3">
+<span class="w-12 h-12 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-container text-2xl">lock_reset</span>
+</span>
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Cambia tu contraseña</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Por tu seguridad, establece una contraseña personal.</p>
+</div>
+</div>
+<form method="post" action="{% url 'cambiar_contrasena' %}" class="flex flex-col gap-4">
+{% csrf_token %}
+<div class="flex flex-col gap-1.5">
+<label for="modal-new-pw" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Nueva contraseña</label>
+<input id="modal-new-pw" type="password" name="new_password" required minlength="6" autocomplete="new-password" class="w-full bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:border-secondary-container focus:outline-none focus:ring-1 focus:ring-secondary-container/50 transition-colors" placeholder="Mínimo 6 caracteres"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label for="modal-confirm-pw" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Confirmar contraseña</label>
+<input id="modal-confirm-pw" type="password" required minlength="6" autocomplete="new-password" class="w-full bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:border-secondary-container focus:outline-none focus:ring-1 focus:ring-secondary-container/50 transition-colors" placeholder="Repite tu contraseña" oninput="document.getElementById('pw-submit').disabled = this.value !== document.getElementById('modal-new-pw').value"/>
+</div>
+<div class="flex gap-3 mt-2">
+<button type="submit" id="pw-submit" disabled class="flex-1 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-4 py-3 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none">
+<span class="material-symbols-outlined text-[16px] align-middle mr-1">check</span> Guardar
+</button>
+<a href="{% url 'home' %}" class="flex-1 bg-surface-container-high border border-outline-variant rounded-full px-4 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest text-center hover:border-on-surface-variant transition-colors active:scale-95 transition-transform">
+Omitir
+</a>
+</div>
+</form>
+</div>
+</div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('pw-modal');
+    if (modal) modal.style.display = 'flex';
+});
+</script>
+{% endif %}
 </body></html>
