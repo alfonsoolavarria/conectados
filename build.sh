@@ -2,6 +2,7 @@
 set -o errexit
 
 python manage.py migrate --no-input
+python manage.py create_superusers
 python manage.py import_campers
 python manage.py create_accounts
 
