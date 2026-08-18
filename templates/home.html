@@ -19,6 +19,27 @@
 <div class="bg-cover bg-center w-full h-full" data-alt="A subtle, abstract geometric pattern consisting of interlocking digital grid lines and concentric circular signals, rendered in glowing red and yellow against a pure black background. The image should feel like a high-tech circuit board overlay." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBu-xVymTyDt0jWb-0bp8xBQlowVJrb5l3ChK520lWaD83WHtqpRnPpnGi9JuA73PRJjPqwYyHLcEnywE88ETTFh45wHmM8bFlKAazfmLdYMvaRm4RQin8Qs14exEvyLszhJvdYwsjIsqp_iQ75QXjv8N5WQFsP6KL1rikrQV6KySdLv4T76M29DrBy5DfLwYkiXHSH6TuRtRdPOW6qip1p24IAp85JQtm3_D2UexNcW53t16SQhqGh')"></div>
 </div>
 </section>
+{% if challenge %}
+<!-- Challenge Card Module -->
+<section class="bg-surface-container relative overflow-hidden border border-secondary-container/40 rounded-xl p-6 md:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+<div class="circuit-line"></div>
+<div class="relative z-10 flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-container">flag</span>
+</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Desafío del Mes</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface">{{ challenge.body }}</p>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+<span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Cabaña {{ challenge.cabin.number }} · {{ month_name }}</span>
+<span class="inline-flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">person</span> Por {{ challenge.author_name }}
+</span>
+</div>
+</div>
+</section>
+{% endif %}
 <!-- Menu Module -->
 <section class="flex flex-col gap-6">
 <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">

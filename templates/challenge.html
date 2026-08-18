@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Crear / Ver Desafío{% endblock %}
+{% block content %}
+<!-- Botón regresar -->
+<section>
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors duration-200" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Regresar
+        </a>
+</section>
+<!-- Encabezado -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl text-secondary-container">flag</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Desafío de Cabaña {{ cab.number }}</h2>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Crea el desafío del mes y revisa los anteriores</p>
+</section>
+<!-- Formulario -->
+<section class="bg-surface-container border border-surface-variant rounded-xl p-6 md:p-8 flex flex-col gap-6">
+<form class="flex flex-col gap-4" method="post">
+{% csrf_token %}
+<label for="id_body" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Nuevo desafío del mes</span>
+<textarea id="id_body" name="body" rows="4" maxlength="500" required placeholder="Escribe aquí el desafío para tu cabaña, por ejemplo: &quot;Debemos leer el evangelio de Juan este mes y hacer el esfuerzo de orar cada día&quot;" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 resize-none"></textarea>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Este mensaje aparecerá en la página de inicio de los acampantes de tu cabaña.</span>
+</label>
+<button type="submit" class="inline-flex items-center justify-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-6 py-3 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200 w-fit">
+<span class="material-symbols-outlined text-[18px]">flag</span>
+            Guardar desafío
+        </button>
+</form>
+</section>
+<!-- Historial de desafíos -->
+<section class="flex flex-col gap-4">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">history</span>
+                Desafíos anteriores
+            </h3>
+{% for ch in challenges %}
+<article class="bg-surface-container border {% if forloop.first %}border-secondary-container/50{% else %}border-surface-variant{% endif %} rounded-xl p-5 flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<span class="w-9 h-9 rounded-xl {% if forloop.first %}bg-secondary-container/15 border border-secondary-container/40 text-secondary-container{% else %}bg-surface-container-high border border-surface-variant text-on-surface-variant{% endif %} flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">flag</span>
+</span>
+<div class="flex flex-col">
+{% if forloop.first %}
+<span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Desafío vigente</span>
+{% else %}
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Publicado</span>
+{% endif %}
+<span class="font-label-sm text-label-sm text-on-surface-variant">{{ ch.created_at|date:"d M Y · H:i" }}</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface">{{ ch.body }}</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">person</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Por {{ ch.author_name }}</span>
+</div>
+</article>
+{% empty %}
+<div class="bg-surface-container border border-surface-variant rounded-xl p-8 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">Todavía no hay desafíos. Crea el primero arriba.</p>
+</div>
+{% endfor %}
+</section>
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

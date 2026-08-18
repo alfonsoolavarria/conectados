@@ -28,6 +28,21 @@
 </div>
 </div>
 </button>
+{% if es_mia %}
+<div class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-4 border-t border-surface-variant">
+<div class="flex items-start gap-2 min-w-0">
+<span class="material-symbols-outlined text-secondary-container shrink-0">flag</span>
+{% if cab.challenge %}
+<p class="font-body-md text-body-md text-on-surface-variant">{{ cab.challenge.body }}</p>
+{% else %}
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Aún no hay desafío este mes</p>
+{% endif %}
+</div>
+<a class="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-4 py-2 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200 shrink-0" href="{% url 'challenge' cab.cabin.pk %}">
+<span class="material-symbols-outlined text-[16px]">edit</span> Crear / Ver desafío
+</a>
+</div>
+{% endif %}
 <div class="campers-panel">
 {% if cab.campers %}
 <div class="flex flex-col gap-3 mt-2">
@@ -46,6 +61,11 @@
 <span class="font-label-sm text-label-sm {% if camper.completed %}text-secondary-container{% else %}text-on-surface-variant{% endif %} shrink-0">{% widthratio camper.completed camper.total 100 %}%</span>
 </div>
 </div>
+{% if es_mia and camper.member.user %}
+<a class="shrink-0 w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center hover:border-secondary-container/60 hover:text-secondary-container active:scale-95 transition-all duration-200" href="{% url 'conversacion' camper.member.user.pk %}" title="Enviar mensaje a {{ camper.member.full_name }}">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+</a>
+{% endif %}
 </div>
 {% endfor %}
 </div>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Cabin, DailyCommitment, Member, Message
+from .models import Cabin, Challenge, DailyCommitment, Member, Message
 
 
 @admin.register(DailyCommitment)
@@ -30,3 +30,10 @@ class MessageAdmin(admin.ModelAdmin):
     list_display = ("sender", "recipient", "body", "is_read", "created_at")
     list_filter = ("is_read", "created_at")
     search_fields = ("sender__username", "recipient__username", "body")
+
+
+@admin.register(Challenge)
+class ChallengeAdmin(admin.ModelAdmin):
+    list_display = ("cabin", "body", "created_by", "created_at")
+    list_filter = ("cabin", "created_at")
+    search_fields = ("body", "created_by__username", "created_by__email")

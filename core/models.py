@@ -115,6 +115,42 @@ class Member(models.Model):
         return f"{self.full_name} ({self.get_role_display()} - {self.cabin})"
 
 
+class Challenge(models.Model):
+    cabin = models.ForeignKey(
+        Cabin,
+        on_delete=models.CASCADE,
+        related_name="challenges",
+        verbose_name="Cabaña",
+    )
+    body = models.TextField(verbose_name="Desafío")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_challenges",
+        verbose_name="Creado por",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Creado")
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Desafío"
+        verbose_name_plural = "Desafíos"
+
+    def __str__(self):
+        return f"Desafío {self.cabin}: {self.body[:40]}"
+
+    @property
+    def author_name(self):
+        if self.created_by_id is None:
+            return "—"
+        member = getattr(self.created_by, "member", None)
+        if member is not None and member.full_name:
+            return member.full_name
+        return self.created_by.username or "—"
+
+
 class Message(models.Model):
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,

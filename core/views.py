@@ -1,6 +1,7 @@
 import calendar
 from datetime import date, datetime, timedelta
 
+import segno
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
@@ -11,7 +12,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .forms import LoginForm
-from .models import Cabin, DailyCommitment, Message
+from .models import Cabin, Challenge, DailyCommitment, Message
 
 User = get_user_model()
 
@@ -36,6 +37,13 @@ class CustomLoginView(LoginView):
     template_name = "registration/login.html"
     authentication_form = LoginForm
     redirect_authenticated_user = True
+
+    def get_initial(self):
+        initial = super().get_initial()
+        username = self.request.GET.get("username", "").strip()
+        if username:
+            initial["identifier"] = username
+        return initial
 
 
 def _mes_dias(user, ref_date=None):
@@ -74,10 +82,16 @@ def home(request):
     context["completed_count"] = request.user.commitments.filter(
         is_completed=True
     ).count()
+    context["challenge"] = (
+        member.cabin.challenges.order_by("-created_at").first()
+        if member is not None
+        else None
+    )
     return render(request, "home.html", context)
 
 
 def _dashboard_lideres(request):
+    member = request.user.member
     hoy = date.today()
     num_dias = calendar.monthrange(hoy.year, hoy.month)[1]
     completados_por_user = {
@@ -102,6 +116,8 @@ def _dashboard_lideres(request):
                 "leaders": cab.members.filter(role="leader"),
                 "campers": campers,
                 "num_days": num_dias,
+                "challenge": cab.challenges.order_by("-created_at").first(),
+                "es_mia": member.cabin_id == cab.pk,
             }
         )
     cabinas_masc = [c for c in cabanas_data if c["cabin"].gender == "M"]
@@ -264,3 +280,54 @@ def conversacion(request, user_id):
             "messages": mensajes,
         },
     )
+
+
+@login_required
+def challenge(request, cabin_id):
+    member = getattr(request.user, "member", None)
+    cab = get_object_or_404(Cabin, pk=cabin_id)
+    if member is None or member.role != "leader" or member.cabin_id != cab.pk:
+        return HttpResponseRedirect(reverse("home"))
+
+    if request.method == "POST":
+        body = request.POST.get("body", "").strip()
+        if body:
+            Challenge.objects.create(cabin=cab, body=body, created_by=request.user)
+        return HttpResponseRedirect(reverse("home"))
+
+    challenges = cab.challenges.all()
+    current = challenges.first()
+    return render(
+        request,
+        "challenge.html",
+        {
+            "cab": cab,
+            "current": current,
+            "challenges": challenges,
+        },
+    )
+
+
+@login_required
+def qr_lideres(request):
+    cabinas = []
+    for cab in Cabin.objects.prefetch_related("members").all():
+        lideres = []
+        for m in cab.members.filter(role="leader", is_active=True).exclude(
+            user__isnull=True
+        ).select_related("user"):
+            url = request.build_absolute_uri(
+                reverse("login") + f"?username={m.user.username}"
+            )
+            qr = segno.make(url, error="m")
+            lideres.append(
+                {
+                    "member": m,
+                    "username": m.user.username,
+                    "qr": qr.svg_data_uri(scale=4, border=1),
+                    "url": url,
+                }
+            )
+        if lideres:
+            cabinas.append({"cabin": cab, "leaders": lideres})
+    return render(request, "qr_print.html", {"cabinas": cabinas})

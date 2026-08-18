@@ -168,7 +168,7 @@
                             Camp Code or Email
                         </label>
 <div class="relative input-glow transition-all duration-300 rounded-lg">
-<input class="w-full bg-surface-dim border border-surface-container-high rounded-lg py-3 px-4 text-on-surface font-body-md text-body-md placeholder:text-outline-variant focus:outline-none focus:border-transparent transition-colors" id="identifier" name="identifier" placeholder="e.g. HVYC-2024" type="text" required/>
+<input class="w-full bg-surface-dim border border-surface-container-high rounded-lg py-3 px-4 text-on-surface font-body-md text-body-md placeholder:text-outline-variant focus:outline-none focus:border-transparent transition-colors" id="identifier" name="identifier" placeholder="e.g. HVYC-2024" type="text" required value="{{ form.identifier.value|default:'' }}"/>
 </div>
 </div>
 <!-- Input Group: Password -->
