@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from core.models import Member
+from core.models import Cabin, Member
 
 User = get_user_model()
 
@@ -10,8 +10,8 @@ SUPERUSERS = [
         "username": "admin",
         "email": "admin@conectados.com",
         "password": "admin12345",
-        "first_name": "Samuel",
-        "last_name": "Gil",
+        "first_name": "Alfonso",
+        "last_name": "Olavarria",
     },
 ]
 
@@ -45,28 +45,45 @@ class Command(BaseCommand):
                 )
 
             full_name = f"{data['first_name']} {data['last_name']}"
-            members = Member.objects.filter(full_name=full_name)
-            if members.exists():
-                member = members.first()
-                if member.user_id != user.id:
-                    member.user = user
-                    member.must_change_password = False
-                    member.save(update_fields=["user", "must_change_password"])
+            member = Member.objects.filter(full_name=full_name).first()
+
+            if member is None:
+                cabin = Cabin.objects.first()
+                if cabin is None:
                     self.stdout.write(
-                        self.style.SUCCESS(
-                            f"  → Vinculado al Member '{member.full_name}' "
-                            f"({member.get_role_display()}, "
-                            f"Cabaña {member.cabin.number})"
+                        self.style.WARNING(
+                            f"  → No hay cabañas. No se pudo crear Member "
+                            f"para '{full_name}'."
                         )
                     )
-                else:
-                    self.stdout.write(
-                        f"  → Ya vinculado a '{member.full_name}'."
+                    continue
+                member = Member.objects.create(
+                    full_name=full_name,
+                    role="leader",
+                    cabin=cabin,
+                    gender="M",
+                    phone="",
+                    is_active=True,
+                )
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"  → Member '{full_name}' creado como líder "
+                        f"(Cabaña {cabin.number})."
                     )
+                )
+
+            if member.user_id != user.id:
+                member.user = user
+                member.must_change_password = False
+                member.save(update_fields=["user", "must_change_password"])
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"  → Vinculado al Member '{member.full_name}' "
+                        f"({member.get_role_display()}, "
+                        f"Cabaña {member.cabin.number})"
+                    )
+                )
             else:
                 self.stdout.write(
-                    self.style.WARNING(
-                        f"  → No se encontró Member '{full_name}' "
-                        f"(¿corre import_campers primero?)"
-                    )
+                    f"  → Ya vinculado a '{member.full_name}'."
                 )
