@@ -24,8 +24,11 @@ class Command(BaseCommand):
     help = "Importa acampantes y líderes de cabaña desde chicos.txt y chicas.txt"
 
     def handle(self, *args, **options):
-        Member.objects.all().delete()
-        Cabin.objects.all().delete()
+        if Cabin.objects.exists():
+            self.stdout.write(
+                self.style.WARNING("Ya existen cabañas, se omite la importación.")
+            )
+            return
         total_campers = 0
         total_leaders = 0
         total_cabins = 0

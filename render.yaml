@@ -7,7 +7,7 @@ services:
   - type: web
     name: conectados
     runtime: python
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate && python manage.py import_campers && python manage.py create_accounts
     startCommand: gunicorn conectados.wsgi:application
     envVars:
       - key: SECRET_KEY
