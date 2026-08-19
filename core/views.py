@@ -18,6 +18,13 @@ from .models import Cabin, Challenge, DailyCommitment, Message
 
 User = get_user_model()
 
+
+def _desafio_activo(challenges):
+    for ch in challenges:
+        if ch.is_active:
+            return ch
+    return None
+
 MESES_ES = [
     "",
     "Enero",
@@ -88,7 +95,7 @@ def home(request):
         is_completed=True
     ).count()
     context["challenge"] = (
-        member.cabin.challenges.order_by("-created_at").first()
+        _desafio_activo(member.cabin.challenges.all())
         if member is not None
         else None
     )
@@ -123,7 +130,7 @@ def _dashboard_lideres(request):
                 "leaders": cab.members.filter(role="leader"),
                 "campers": miembros_con_progreso,
                 "num_days": num_dias,
-                "challenge": cab.challenges.order_by("-created_at").first(),
+                "challenge": _desafio_activo(cab.challenges.all()),
                 "es_mia": member.cabin_id == cab.pk,
             }
         )
@@ -305,8 +312,12 @@ def challenge(request, cabin_id):
 
     if request.method == "POST":
         body = request.POST.get("body", "").strip()
+        duration = int(request.POST.get("duration_days", 30))
         if body:
-            Challenge.objects.create(cabin=cab, body=body, created_by=request.user)
+            Challenge.objects.create(
+                cabin=cab, body=body, created_by=request.user,
+                duration_days=duration,
+            )
         return HttpResponseRedirect(reverse("home"))
 
     challenges = cab.challenges.all()

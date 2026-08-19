@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
 
 
 class DailyCommitment(models.Model):
@@ -119,6 +121,12 @@ class Member(models.Model):
 
 
 class Challenge(models.Model):
+    DURACIONES = [
+        (5, "5 días"),
+        (10, "10 días"),
+        (20, "20 días"),
+        (30, "1 mes"),
+    ]
     cabin = models.ForeignKey(
         Cabin,
         on_delete=models.CASCADE,
@@ -126,6 +134,11 @@ class Challenge(models.Model):
         verbose_name="Cabaña",
     )
     body = models.TextField(verbose_name="Desafío")
+    duration_days = models.PositiveSmallIntegerField(
+        choices=DURACIONES,
+        default=30,
+        verbose_name="Duración (días)",
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -143,6 +156,11 @@ class Challenge(models.Model):
 
     def __str__(self):
         return f"Desafío {self.cabin}: {self.body[:40]}"
+
+    @property
+    def is_active(self):
+        fin = self.created_at + timedelta(days=self.duration_days)
+        return timezone.now() <= fin
 
     @property
     def author_name(self):
