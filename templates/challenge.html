@@ -14,15 +14,25 @@
 <span class="material-symbols-outlined text-3xl text-secondary-container">flag</span>
 <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Desafío de Cabaña {{ cab.number }}</h2>
 </div>
-<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Crea el desafío del mes y revisa los anteriores</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Crea el desafío y revisa los anteriores</p>
 </section>
+{% if current %}
+<!-- Aviso desafío activo -->
+<div class="bg-secondary-container/10 border border-secondary-container/40 rounded-xl p-4 flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary-container mt-0.5">info</span>
+<div class="flex flex-col gap-1">
+<p class="font-body-md text-body-md text-on-surface">Ya hay un desafío activo: <strong class="text-secondary-fixed">{{ current.body|truncatewords:15 }}</strong></p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Si creas uno nuevo, el anterior quedará como finalizado y el nuevo comenzará inmediatamente.</p>
+</div>
+</div>
+{% endif %}
 <!-- Formulario -->
 <section class="bg-surface-container border border-surface-variant rounded-xl p-6 md:p-8 flex flex-col gap-6">
-<form class="flex flex-col gap-4" method="post">
+<form class="flex flex-col gap-4" method="post" id="challenge-form" onsubmit="return confirmSubmit(event)">
 {% csrf_token %}
 <label for="id_body" class="flex flex-col gap-2">
-<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Nuevo desafío del mes</span>
-<textarea id="id_body" name="body" rows="4" maxlength="500" required placeholder="Escribe aquí el desafío para tu cabaña, por ejemplo: &quot;Debemos leer el evangelio de Juan este mes y hacer el esfuerzo de orar cada día&quot;" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 resize-none"></textarea>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Nuevo desafío</span>
+<textarea id="id_body" name="body" rows="4" maxlength="500" required placeholder="Escribe aquí el desafío para tu cabaña, por ejemplo: &quot;Debemos leer el evangelio de Juan y orar cada día&quot;" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 resize-none"></textarea>
 <span class="font-label-sm text-label-sm text-on-surface-variant">Este mensaje aparecerá en la página de inicio de los acampantes de tu cabaña.</span>
 </label>
 <label for="id_duration" class="flex flex-col gap-2">
@@ -32,7 +42,7 @@
 <option value="5">5 días</option>
 <option value="10">10 días</option>
 <option value="20">20 días</option>
-<option value="30" selected>1 mes (30 días)</option>
+<option value="30" selected>30 días</option>
 </select>
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
 </div>
@@ -44,6 +54,45 @@
         </button>
 </form>
 </section>
+{% if current %}
+<!-- Modal de confirmación -->
+<div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+<div class="bg-surface-container border border-secondary-container/40 rounded-xl p-6 md:p-8 max-w-sm w-full mx-4 flex flex-col gap-5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] animate-[fadeIn_0.2s_ease-out]">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-container">warning</span>
+</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Reemplazar desafío</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">¿Estás seguro? El desafío activo actual finalizará y el nuevo comenzará inmediatamente.</p>
+<div class="flex items-center gap-3 justify-end">
+<button type="button" onclick="closeModal()" class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface border border-outline-variant rounded-full px-4 py-2 transition-colors">
+                Cancelar
+            </button>
+<button type="button" onclick="confirmar()" class="font-label-sm text-label-sm text-on-secondary-container bg-secondary-container font-bold rounded-full px-4 py-2 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined text-[16px] mr-1 align-middle">check</span> Crear nuevo
+            </button>
+</div>
+</div>
+</div>
+<script>
+{% if current %}
+function confirmSubmit(e) {
+    e.preventDefault();
+    document.getElementById("confirm-modal").classList.remove("hidden");
+    return false;
+}
+function closeModal() {
+    document.getElementById("confirm-modal").classList.add("hidden");
+}
+function confirmar() {
+    document.getElementById("challenge-form").submit();
+}
+{% else %}
+function confirmSubmit(e) { return true; }
+{% endif %}
+</script>
+{% endif %}
 <!-- Historial de desafíos -->
 <section class="flex flex-col gap-4">
 <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
@@ -51,16 +100,14 @@
                 Desafíos anteriores
             </h3>
 {% for ch in challenges %}
-<article class="bg-surface-container border {% if forloop.first and ch.is_active %}border-secondary-container/50{% else %}border-surface-variant{% endif %} rounded-xl p-5 flex flex-col gap-2">
+<article class="bg-surface-container border {% if ch.is_active %}border-secondary-container/50{% else %}border-surface-variant{% endif %} rounded-xl p-5 flex flex-col gap-2">
 <div class="flex items-center gap-3">
-<span class="w-9 h-9 rounded-xl {% if forloop.first and ch.is_active %}bg-secondary-container/15 border border-secondary-container/40 text-secondary-container{% else %}bg-surface-container-high border border-surface-variant text-on-surface-variant{% endif %} flex items-center justify-center shrink-0">
+<span class="w-9 h-9 rounded-xl {% if ch.is_active %}bg-secondary-container/15 border border-secondary-container/40 text-secondary-container{% else %}bg-surface-container-high border border-surface-variant text-on-surface-variant{% endif %} flex items-center justify-center shrink-0">
 <span class="material-symbols-outlined text-[18px]">flag</span>
 </span>
 <div class="flex flex-col">
-{% if forloop.first and ch.is_active %}
+{% if ch.is_active %}
 <span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Desafío vigente</span>
-{% elif ch.is_active %}
-<span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Activo</span>
 {% else %}
 <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Finalizado</span>
 {% endif %}

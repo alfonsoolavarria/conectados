@@ -355,20 +355,26 @@ def challenge(request, cabin_id):
         body = request.POST.get("body", "").strip()
         duration = int(request.POST.get("duration_days", 30))
         if body:
+            active_old = _desafio_activo(cab.challenges.all())
+            if active_old is not None:
+                from django.utils import timezone as tz
+                from datetime import timedelta
+                active_old.created_at = tz.now() - timedelta(days=active_old.duration_days + 1)
+                active_old.save(update_fields=["created_at"])
             Challenge.objects.create(
                 cabin=cab, body=body, created_by=request.user,
                 duration_days=duration,
             )
         return HttpResponseRedirect(reverse("home"))
 
+    active = _desafio_activo(cab.challenges.all())
     challenges = cab.challenges.all()
-    current = challenges.first()
     return render(
         request,
         "challenge.html",
         {
             "cab": cab,
-            "current": current,
+            "current": active,
             "challenges": challenges,
         },
     )
