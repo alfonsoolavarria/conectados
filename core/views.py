@@ -59,8 +59,33 @@ class CustomLoginView(LoginView):
         return reverse("home")
 
 
-def _mes_dias(user, ref_date=None):
-    ref_date = ref_date or date.today()
+def _mes_dias(user, ref_date=None, challenge=None):
+    hoy = date.today()
+    if challenge is not None:
+        inicio = challenge.fecha_inicio
+        fin = challenge.fecha_fin
+        completados = set(
+            user.commitments.filter(
+                date__gte=inicio,
+                date__lte=fin,
+                is_completed=True,
+            ).values_list("date", flat=True)
+        )
+        dias = []
+        for i in range(challenge.duration_days):
+            dia_date = inicio + timedelta(days=i)
+            dias.append({
+                "number": i + 1,
+                "date": dia_date,
+                "completed": dia_date in completados,
+                "is_today": dia_date == hoy,
+            })
+        return {
+            "days": dias,
+            "month_name": f"{challenge.duration_days} días",
+            "num_days": challenge.duration_days,
+        }
+    ref_date = ref_date or hoy
     num_dias = calendar.monthrange(ref_date.year, ref_date.month)[1]
     completados = set(
         user.commitments.filter(
@@ -69,7 +94,6 @@ def _mes_dias(user, ref_date=None):
             is_completed=True,
         ).values_list("date", flat=True)
     )
-    hoy = date.today()
     dias = [
         {
             "number": dia,
@@ -91,37 +115,52 @@ def home(request):
     member = getattr(request.user, "member", None)
     if member is not None and member.role == "leader":
         return _dashboard_lideres(request)
-    context = _mes_dias(request.user)
-    context["completed_count"] = request.user.commitments.filter(
-        is_completed=True
-    ).count()
-    context["challenge"] = (
+    active_challenge = (
         _desafio_activo(member.cabin.challenges.all())
         if member is not None
         else None
     )
+    context = _mes_dias(request.user, challenge=active_challenge)
+    context["completed_count"] = request.user.commitments.filter(
+        is_completed=True
+    ).count()
+    context["challenge"] = active_challenge
     return render(request, "home.html", context)
 
 
 def _dashboard_lideres(request):
     member = request.user.member
     hoy = date.today()
-    num_dias = calendar.monthrange(hoy.year, hoy.month)[1]
-    completados_por_user = {
-        user_id: total
-        for user_id, total in DailyCommitment.objects.filter(
-            date__year=hoy.year, date__month=hoy.month, is_completed=True
-        ).values_list("user_id").annotate(total=Count("id"))
-    }
     cabanas_data = []
     for cab in Cabin.objects.prefetch_related("members").all():
+        active_ch = _desafio_activo(cab.challenges.all())
+        if active_ch is not None:
+            challenge_start = active_ch.fecha_inicio
+            challenge_end = active_ch.fecha_fin
+            total_days = active_ch.duration_days
+            completados_por_user = {
+                user_id: total
+                for user_id, total in DailyCommitment.objects.filter(
+                    date__gte=challenge_start,
+                    date__lte=challenge_end,
+                    is_completed=True,
+                ).values_list("user_id").annotate(total=Count("id"))
+            }
+        else:
+            total_days = calendar.monthrange(hoy.year, hoy.month)[1]
+            completados_por_user = {
+                user_id: total
+                for user_id, total in DailyCommitment.objects.filter(
+                    date__year=hoy.year, date__month=hoy.month, is_completed=True
+                ).values_list("user_id").annotate(total=Count("id"))
+            }
         miembros_con_progreso = []
         for m in cab.members.filter(is_active=True).select_related("user"):
             miembros_con_progreso.append(
                 {
                     "member": m,
                     "completed": completados_por_user.get(m.user_id, 0),
-                    "total": num_dias,
+                    "total": total_days,
                     "is_leader": m.role == "leader",
                 }
             )
@@ -130,14 +169,15 @@ def _dashboard_lideres(request):
                 "cabin": cab,
                 "leaders": cab.members.filter(role="leader"),
                 "campers": miembros_con_progreso,
-                "num_days": num_dias,
-                "challenge": _desafio_activo(cab.challenges.all()),
+                "num_days": total_days,
+                "challenge": active_ch,
                 "es_mia": member.cabin_id == cab.pk,
             }
         )
     cabinas_masc = [c for c in cabanas_data if c["cabin"].gender == "M"]
     cabinas_fem = [c for c in cabanas_data if c["cabin"].gender == "F"]
-    my_days = _mes_dias(request.user)
+    my_challenge = _desafio_activo(member.cabin.challenges.all())
+    my_days = _mes_dias(request.user, challenge=my_challenge)
     return render(
         request,
         "lideres.html",
@@ -153,7 +193,7 @@ def _dashboard_lideres(request):
                 if not m["is_leader"]
             ),
             "total_leaders": sum(len(c["leaders"]) for c in cabanas_data),
-            "num_days": num_dias,
+            "num_days": my_challenge.duration_days if my_challenge else calendar.monthrange(hoy.year, hoy.month)[1],
             "my_days": my_days,
         },
     )

@@ -169,6 +169,26 @@ class Challenge(models.Model):
         return timezone.now() <= fin
 
     @property
+    def fecha_inicio(self):
+        return self.created_at.date()
+
+    @property
+    def fecha_fin(self):
+        return self.created_at.date() + timedelta(days=self.duration_days)
+
+    @property
+    def dias_transcurridos(self):
+        from datetime import date as today_date
+        hoy = today_date.today()
+        inicio = self.fecha_inicio
+        fin = self.fecha_fin
+        if hoy < inicio:
+            return 0
+        if hoy > fin:
+            return self.duration_days
+        return (hoy - inicio).days + 1
+
+    @property
     def author_name(self):
         if self.created_by_id is None:
             return "—"
