@@ -1,14 +1,34 @@
 {% extends "base.html" %}
 {% block title %}Conectados 3.0 - Códigos QR{% endblock %}
 {% block content %}
+<style>
+@media print {
+    @page { margin: 12mm; size: A4; }
+    body { background: white !important; }
+    .no-print { display: none !important; }
+    main { padding: 0 !important; gap: 0 !important; }
+    .qr-section { page-break-inside: avoid; break-inside: avoid; }
+    .qr-card { page-break-inside: avoid; break-inside: avoid; }
+    .qr-page { page-break-before: always; page-break-after: avoid; }
+    .qr-grid { display: grid; gap: 8px; }
+    .qr-grid-leaders { grid-template-columns: repeat(2, 1fr); }
+    .qr-grid-campers { grid-template-columns: repeat(3, 1fr); }
+    .qr-header { margin-bottom: 8px; }
+    .qr-title-print { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .qr-name-print { font-size: 11px; font-weight: 600; }
+    .qr-user-print { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }
+    .qr-img-leader { width: 150px; height: 150px; }
+    .qr-img-camper { width: 120px; height: 120px; }
+}
+</style>
 <!-- Encabezado -->
-<section class="flex flex-col gap-4">
+<section class="no-print flex flex-col gap-4">
 <div class="flex flex-wrap items-center justify-between gap-4">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-3xl text-secondary-container">qr_code_2</span>
 <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Códigos QR de Acceso</h2>
 </div>
-<button type="button" onclick="window.print()" class="no-print inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-5 py-2.5 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200">
+<button type="button" onclick="window.print()" class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-5 py-2.5 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200">
 <span class="material-symbols-outlined text-[18px]">print</span>
             Imprimir todo
         </button>
@@ -18,18 +38,20 @@
 <!-- Líderes -->
 {% for c in cabinas %}
 {% if c.leaders %}
-<section class="flex flex-col gap-3">
-<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<section class="qr-section qr-page flex flex-col gap-3">
+<div class="qr-header">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3 qr-title-print">
 <span class="material-symbols-outlined text-secondary-container">shield_person</span>
                 Cabaña {{ c.cabin.number }} — Líderes
             </h3>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 print:grid-cols-2">
+</div>
+<div class="qr-grid qr-grid-leaders">
 {% for l in c.leaders %}
-<div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-3 text-center">
-<img class="w-40 h-40 rounded-lg bg-white p-2" src="{{ l.qr }}" alt="QR {{ l.member.full_name }}"/>
+<div class="qr-card bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-3 text-center">
+<img class="qr-img-leader rounded-lg bg-white p-2" src="{{ l.qr }}" alt="QR {{ l.member.full_name }}"/>
 <div class="flex flex-col gap-1">
-<span class="font-body-md text-body-md text-on-surface font-semibold">{{ l.member.full_name }}</span>
-<span class="font-label-sm text-label-sm text-secondary-container uppercase tracking-widest">Líder · {{ l.username }}</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold qr-name-print">{{ l.member.full_name }}</span>
+<span class="font-label-sm text-label-sm text-secondary-container uppercase tracking-widest qr-user-print">Líder · {{ l.username }}</span>
 </div>
 </div>
 {% endfor %}
@@ -40,18 +62,20 @@
 <!-- Acampantes -->
 {% for c in cabinas %}
 {% if c.campers %}
-<section class="flex flex-col gap-3">
-<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<section class="qr-section qr-page flex flex-col gap-3">
+<div class="qr-header">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3 qr-title-print">
 <span class="material-symbols-outlined text-primary-container">group</span>
                 Cabaña {{ c.cabin.number }} — Acampantes
             </h3>
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 print:grid-cols-3">
+</div>
+<div class="qr-grid qr-grid-campers">
 {% for a in c.campers %}
-<div class="bg-surface-container border border-surface-variant rounded-xl p-4 flex flex-col items-center gap-2 text-center">
-<img class="w-32 h-32 rounded-lg bg-white p-2" src="{{ a.qr }}" alt="QR {{ a.member.full_name }}"/>
+<div class="qr-card bg-surface-container border border-surface-variant rounded-xl p-4 flex flex-col items-center gap-2 text-center">
+<img class="qr-img-camper rounded-lg bg-white p-2" src="{{ a.qr }}" alt="QR {{ a.member.full_name }}"/>
 <div class="flex flex-col gap-0.5">
-<span class="font-body-md text-body-md text-on-surface font-semibold text-sm">{{ a.member.full_name }}</span>
-<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">{{ a.username }}</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold qr-name-print">{{ a.member.full_name }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest qr-user-print">{{ a.username }}</span>
 </div>
 </div>
 {% endfor %}
