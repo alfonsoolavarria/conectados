@@ -55,6 +55,25 @@
 {% include "partials/days_grid.html" with days=my_days.days %}
 </div>
 </section>
+<!-- Filtro de cabañas -->
+<section class="no-print flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">filter_list</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Filtrar cabañas</h3>
+</div>
+<div class="flex flex-wrap gap-3">
+<label class="inline-flex items-center gap-2 bg-surface-container border border-secondary-container/60 rounded-full px-4 py-2 font-label-sm text-label-sm text-on-surface cursor-pointer transition-colors hover:bg-secondary-container/10">
+<input type="radio" name="cabin-filter" value="all" checked onchange="filterCabins('all')" class="accent-secondary-container"/>
+<span class="material-symbols-outlined text-[16px] text-secondary-container">holiday_village</span>
+            Todas ({{ cabins|length }})
+        </label>
+<label class="inline-flex items-center gap-2 bg-surface-container border border-outline-variant rounded-full px-4 py-2 font-label-sm text-label-sm text-on-surface cursor-pointer transition-colors hover:border-secondary-container/60 hover:bg-secondary-container/10">
+<input type="radio" name="cabin-filter" value="mine" onchange="filterCabins('mine')" class="accent-secondary-container"/>
+<span class="material-symbols-outlined text-[16px] text-secondary-container">home</span>
+            Mi cabaña (Cabaña {{ request.user.member.cabin.number }})
+        </label>
+</div>
+</section>
 <!-- Cabañas: dos columnas por género -->
 <section class="flex flex-col gap-8">
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -114,6 +133,15 @@ function toggleMyChallenges() {
     panel.classList.toggle("hidden");
     chevron.classList.toggle("rotate-180");
     chevron.classList.toggle("rotate-0");
+}
+function filterCabins(mode) {
+    document.querySelectorAll("[data-cabin-number]").forEach(function(card) {
+        if (mode === "mine") {
+            card.style.display = card.getAttribute("data-es-mia") === "true" ? "" : "none";
+        } else {
+            card.style.display = "";
+        }
+    });
 }
 </script>
 {% endblock %}
