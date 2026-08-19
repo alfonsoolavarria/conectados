@@ -12,7 +12,7 @@ SUPERUSERS = [
         "password": "admin12345",
         "first_name": "Alfonso",
         "last_name": "Olavarria",
-        "member_name": "Alfonso",
+        "member_name": "Alfonso Olavarria",
         "member_cabin": 6,
     },
 ]

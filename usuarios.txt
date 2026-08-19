@@ -12,71 +12,73 @@
 
 --- Cabaña 1 (Mujeres) ---
 
-  Camila Vivas              Acampante          camila.vivas              campo12345
-  Cristina Toro             Acampante          cristina.toro             campo12345
-  Jhormangely Manosalva     Acampante          jhormangely.manosalva     campo12345
-  Katerine Castillo         Acampante          katerine.castillo         campo12345
-  Keilys Díaz               Acampante          keilys.diaz               campo12345
-  Marcela Solorzano         Acampante          marcela.solorzano         campo12345
-  Margeore Mardini          Acampante          margeore.mardini          campo12345
-  Melany Torres             Acampante          melany.torres             campo12345
-  Nicole Cortez             Acampante          nicole.cortez             campo12345
-  Rachel Araujo             Acampante          rachel.araujo             campo12345
-  Renatha Silva             Acampante          renatha.silva             campo12345
-  Roxana León               Acampante          roxana.leon               campo12345
-  Sofia Bolivar             Acampante          sofia.bolivar             campo12345
-  Sofia Zapata              Acampante          sofia.zapata              campo12345
-  Sophia Azocar             Acampante          sophia.azocar             campo12345
-  Yeriagnnys Rosales        Acampante          yeriagnnys.rosales        campo12345
-  Yeximar Poche             Acampante          yeximar.poche             campo12345
-  Génesis M. Zaret          Líder de cabaña    genesis.m..zaret          campo12345
+  Camila Vivas              Acampante          camila.vivas3             campo12345
+  Cristina Toro             Acampante          cristina.toro3            campo12345
+  Jhormangely Manosalva     Acampante          jhormangely.manosalva3    campo12345
+  Katerine Castillo         Acampante          katerine.castillo3        campo12345
+  Keilys Diaz               Acampante          keilys.diaz3              campo12345
+  Marcela Solorzano         Acampante          marcela.solorzano3        campo12345
+  Margeore Mardini          Acampante          margeore.mardini3         campo12345
+  Melany Torres             Acampante          melany.torres3            campo12345
+  Nicole Cortez             Acampante          nicole.cortez3            campo12345
+  Rashel Araujo             Acampante          rashel.araujo2            campo12345
+  Renatha Silva             Acampante          renatha.silva3            campo12345
+  Roxana León               Acampante          roxana.leon3              campo12345
+  Sofia Bolivar             Acampante          sofia.bolivar3            campo12345
+  Sofia Zapata              Acampante          sofia.zapata3             campo12345
+  Sophia Azocar             Acampante          sophia.azocar3            campo12345
+  Yeriagnnys Rosales        Acampante          yeriagnnys.rosales3       campo12345
+  Yeximar Poche             Acampante          yeximar.poche3            campo12345
+  Génesis Montezuma         Líder de cabaña    genesis.montezuma         campo12345
+  Sarai Gil                 Líder de cabaña    sarai.gil                 campo12345
+  Zaret Hernandez           Líder de cabaña    zaret.hernandez           campo12345
 
 --- Cabaña 2 (Chicos) ---
 
-  Carlos Hurtado            Acampante          carlos.hurtado            campo12345
-  Diego Guedez              Acampante          diego.guedez              campo12345
-  Gehudiel González         Acampante          gehudiel.gonzalez         campo12345
-  Keiver Castillo           Acampante          keiver.castillo           campo12345
-  Ronald Toro               Acampante          ronald.toro               campo12345
+  Carlos Hurtado            Acampante          carlos.hurtado3           campo12345
+  Diego Guedez              Acampante          diego.guedez3             campo12345
+  Gehudiel Gonzalez         Acampante          gehudiel.gonzalez3        campo12345
+  Itan Rodriguez            Acampante          itan.rodriguez2           campo12345
+  Keiver Castillo           Acampante          keiver.castillo3          campo12345
+  Ronald Toro               Acampante          ronald.toro3              campo12345
   José Manuel               Líder de cabaña    jose.manuel               campo12345
   Samuel Gil                Líder de cabaña    samuel.gil                campo12345
 
 --- Cabaña 3 (Mujeres) ---
 
-  Andreimar Castillo        Acampante          andreimar.castillo        campo12345
-  Gilmary Rivero            Acampante          gilmary.rivero            campo12345
-  Hillary Acosta            Acampante          hillary.acosta            campo12345
-  Joselis Plaza             Acampante          joselis.plaza             campo12345
-  Laurimar Perozo           Acampante          laurimar.perozo           campo12345
-  Mariana Veliz             Acampante          mariana.veliz             campo12345
-  Roselbys Nuñez            Acampante          roselbys.nunez            campo12345
-  Saray Aguilera            Acampante          saray.aguilera            campo12345
-  Sofia Alvarado            Acampante          sofia.alvarado            campo12345
-  Sophia Linares            Acampante          sophia.linares            campo12345
-  Yelmary Poche             Acampante          yelmary.poche             campo12345
-  Yenimar Maitan            Acampante          yenimar.maitan            campo12345
-  Astrid                    Líder de cabaña    astrid                    campo12345
-  Karina                    Líder de cabaña    karina                    campo12345
-  María Z                   Líder de cabaña    maria.z                   campo12345
+  Emiliana Ochoa            Acampante          emiliana.ochoa2           campo12345
+  Gilmary Rivero            Acampante          gilmary.rivero3           campo12345
+  Hillary Acosta            Acampante          hillary.acosta3           campo12345
+  Joselis Plaza             Acampante          joselis.plaza3            campo12345
+  Laurimar Perozo           Acampante          laurimar.perozo3          campo12345
+  Mariana Veliz             Acampante          mariana.veliz3            campo12345
+  Roselbys Nuñez            Acampante          roselbys.nunez3           campo12345
+  Sarai Aguilera            Acampante          sarai.aguilera2           campo12345
+  Sofia Alvarado            Acampante          sofia.alvarado3           campo12345
+  Sophia Linares            Acampante          sophia.linares3           campo12345
+  Yelmary Poche             Acampante          yelmary.poche3            campo12345
+  Yenimar Maitán            Acampante          yenimar.maitan3           campo12345
+  Astrid Semprun            Líder de cabaña    astrid.semprun            campo12345
+  Karina Semprun            Líder de cabaña    karina.semprun            campo12345
+  María Zerpa               Líder de cabaña    maria.zerpa               campo12345
 
 --- Cabaña 4 (Chicos) ---
 
-  Abraham Semprún           Acampante          abraham.semprun           campo12345
-  Dainer Estevez            Acampante          dainer.estevez            campo12345
-  David Acosta              Acampante          david.acosta              campo12345
-  Deiver Esteves            Acampante          deiver.esteves            campo12345
-  Elias Aguilera            Acampante          elias.aguilera            campo12345
-  Joel Rojas                Acampante          joel.rojas                campo12345
-  Josué Guédez              Acampante          josue.guedez              campo12345
-  Josué Pérez               Acampante          josue.perez               campo12345
-  Luis Sojo                 Acampante          luis.sojo                 campo12345
-  Mathias Pacheco           Acampante          mathias.pacheco           campo12345
-  Robert Guerrero           Acampante          robert.guerrero           campo12345
-  Victor Chirinos           Acampante          victor.chirinos           campo12345
-  Yohan Monserrat           Acampante          yohan.monserrat           campo12345
-  Yonangel Morales          Acampante          yonangel.morales          campo12345
-  Yoncleiber Castillo       Acampante          yoncleiber.castillo       campo12345
-  Yurendel González         Acampante          yurendel.gonzalez         campo12345
+  Abraham Semprun           Acampante          abraham.semprun3          campo12345
+  David Acosta              Acampante          david.acosta3             campo12345
+  Elias Aguilera            Acampante          elias.aguilera3           campo12345
+  Eliezer López             Acampante          eliezer.lopez2            campo12345
+  Joel Rojas                Acampante          joel.rojas3               campo12345
+  Johan Monserratte         Acampante          johan.monserratte2        campo12345
+  Josue Guedez              Acampante          josue.guedez3             campo12345
+  Josue Perez               Acampante          josue.perez3              campo12345
+  Luis Sojo                 Acampante          luis.sojo3                campo12345
+  Mathias Pacheco           Acampante          mathias.pacheco3          campo12345
+  Robert Guerrero           Acampante          robert.guerrero3          campo12345
+  Victor Chirinos           Acampante          victor.chirinos3          campo12345
+  Yonangel Morales          Acampante          yonangel.morales3         campo12345
+  Yoncleiber Castillo       Acampante          yoncleiber.castillo3      campo12345
+  Yurendel Gonzalez         Acampante          yurendel.gonzalez3        campo12345
   Abelardo                  Líder de cabaña    abelardo                  campo12345
   Eliezer                   Líder de cabaña    eliezer                   campo12345
   Kerlbins                  Líder de cabaña    kerlbins                  campo12345
@@ -84,61 +86,65 @@
 
 --- Cabaña 5 (Mujeres) ---
 
-  Aileen Cardozo            Acampante          aileen.cardozo            campo12345
-  Anais Saldivia            Acampante          anais.saldivia            campo12345
-  Angelina Estrada          Acampante          angelina.estrada          campo12345
-  Angelina Galban           Acampante          angelina.galban           campo12345
-  Barbara Jones             Acampante          barbara.jones             campo12345
-  Gleidismar Blanco         Acampante          gleidismar.blanco         campo12345
-  Karen López               Acampante          karen.lopez               campo12345
-  Sarahí Amarista           Acampante          sarahi.amarista           campo12345
-  Stephanie Rojas           Acampante          stephanie.rojas           campo12345
-  Ydialis Rodríguez         Acampante          ydialis.rodriguez         campo12345
-  Abib                      Líder de cabaña    abib                      campo12345
-  Génesis A                 Líder de cabaña    genesis.a                 campo12345
-  Mariangel                 Líder de cabaña    mariangel                 campo12345
+  Aileen Cardozo            Acampante          aileen.cardozo3           campo12345
+  Anais Saldivia            Acampante          anais.saldivia3           campo12345
+  Angelina Estrada          Acampante          angelina.estrada3         campo12345
+  Angelina Galban           Acampante          angelina.galban3          campo12345
+  Barbara Jones             Acampante          barbara.jones3            campo12345
+  Gleidismar Blanco         Acampante          gleidismar.blanco3        campo12345
+  Karen López               Acampante          karen.lopez3              campo12345
+  Sarahi Amarista           Acampante          sarahi.amarista3          campo12345
+  Stefhanie Rojas           Acampante          stefhanie.rojas2          campo12345
+  Victoria Castillo         Acampante          victoria.castillo2        campo12345
+  Ydialis Rodriguez         Acampante          ydialis.rodriguez3        campo12345
+  Abib Lamas                Líder de cabaña    abib.lamas                campo12345
+  Génesis Aguilar           Líder de cabaña    genesis.aguilar           campo12345
+  Mariangel Sanchez         Líder de cabaña    mariangel.sanchez         campo12345
 
 --- Cabaña 6 (Chicos) ---
 
-  Adrian Rosales            Acampante          adrian.rosales            campo12345
-  Daniel Calzada            Acampante          daniel.calzada            campo12345
-  Francisco Loaiza          Acampante          francisco.loaiza          campo12345
-  Isaac López               Acampante          isaac.lopez               campo12345
-  Johandy Morales           Acampante          johandy.morales           campo12345
-  Jonas Araujo              Acampante          jonas.araujo              campo12345
-  Juan Paredes              Acampante          juan.paredes              campo12345
-  Ludwing Martinez          Acampante          ludwing.martinez          campo12345
-  Samuel Monserrat          Acampante          samuel.monserrat          campo12345
-  Santiago Raymond          Acampante          santiago.raymond          campo12345
-  Alfonso                   Líder de cabaña    admin                     campo12345
-  Josué                     Líder de cabaña    josue                     campo12345
-  Miguel                    Líder de cabaña    miguel                    campo12345
+  Adrian Rosales            Acampante          adrian.rosales3           campo12345
+  Daniel Calzada            Acampante          daniel.calzada3           campo12345
+  Estevan Gonzalez          Acampante          estevan.gonzalez2         campo12345
+  Francisco Loaiza          Acampante          francisco.loaiza3         campo12345
+  Isaac López               Acampante          isaac.lopez3              campo12345
+  Jhoandy Morales           Acampante          jhoandy.morales2          campo12345
+  Jonas Araujo              Acampante          jonas.araujo3             campo12345
+  Juan Paredes              Acampante          juan.paredes3             campo12345
+  Ludwig Martínez           Acampante          ludwig.martinez2          campo12345
+  Samuel Monserratte        Acampante          samuel.monserratte2       campo12345
+  Santiago Reymond          Acampante          santiago.reymond2         campo12345
+  Alfonso Olavarria         Líder de cabaña    admin                     campo12345
+  Josué Yañez               Líder de cabaña    josue.yanez               campo12345
+  Miguel Vivas              Líder de cabaña    miguel.vivas              campo12345
 
 --- Cabaña 7 (Mujeres) ---
 
-  Angelica Buitriago        Acampante          angelica.buitriago        campo12345
-  Diana Díaz                Acampante          diana.diaz                campo12345
-  Lucelys Hidalgo           Acampante          lucelys.hidalgo           campo12345
-  Rosmary Rivero            Acampante          rosmary.rivero            campo12345
-  Sara Ramos                Acampante          sara.ramos                campo12345
-  Vanessa Corales           Acampante          vanessa.corales           campo12345
-  Sinaí                     Líder de cabaña    sinai                     campo12345
-  Yoselin M                 Líder de cabaña    yoselin.m                 campo12345
+  Angelica Buitrago         Acampante          angelica.buitrago2        campo12345
+  Diana Diaz                Acampante          diana.diaz3               campo12345
+  Karla Gutiérrez           Acampante          karla.gutierrez2          campo12345
+  Lucelis Hidalgo           Acampante          lucelis.hidalgo2          campo12345
+  Rosmary Rivero            Acampante          rosmary.rivero3           campo12345
+  Sara Ramos                Acampante          sara.ramos3               campo12345
+  Vanessa Corales           Acampante          vanessa.corales3          campo12345
+  Waleska Gutierrez         Acampante          waleska.gutierrez2        campo12345
+  Sinaí Motta               Líder de cabaña    sinai.motta               campo12345
+  Yoselin Morgado           Líder de cabaña    yoselin.morgado           campo12345
 
 --- Cabaña 8 (Chicos) ---
 
-  Alfonso Tablera           Acampante          alfonso.tablera           campo12345
-  Angel Estevez             Acampante          angel.estevez             campo12345
-  Frederick Castro          Acampante          frederick.castro          campo12345
-  Leobgard Alguilar         Acampante          leobgard.alguilar         campo12345
-  Natan Aguilar             Acampante          natan.aguilar             campo12345
-  Raul Castro               Acampante          raul.castro               campo12345
-  Richard Pulido            Acampante          richard.pulido            campo12345
-  Roger Zapata              Acampante          roger.zapata              campo12345
-  Stiven Arroyo             Acampante          stiven.arroyo             campo12345
-  Yahir Martinez            Acampante          yahir.martinez            campo12345
-  Pachi                     Líder de cabaña    pachi                     campo12345
-  Waldemar                  Líder de cabaña    waldemar                  campo12345
+  Alfonso Tablera           Acampante          alfonso.tablera3          campo12345
+  Angel Esteves             Acampante          angel.esteves2            campo12345
+  Frederik Castro           Acampante          frederik.castro2          campo12345
+  Leogard Aguilar           Acampante          leogard.aguilar2          campo12345
+  Natan Aguilar             Acampante          natan.aguilar3            campo12345
+  Raul Castro               Acampante          raul.castro3              campo12345
+  Richard Pulido            Acampante          richard.pulido3           campo12345
+  Roger Zapata              Acampante          roger.zapata3             campo12345
+  Steven Arroyo             Acampante          steven.arroyo2            campo12345
+  Yahir Martínez            Acampante          yahir.martinez3           campo12345
+  Francisco Omaña           Líder de cabaña    francisco.omana           campo12345
+  Waldemar Neda             Líder de cabaña    waldemar.neda             campo12345
 
 ============================================================
   Contraseña por defecto acampantes/líderes: campo12345
