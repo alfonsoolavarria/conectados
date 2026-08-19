@@ -115,9 +115,14 @@ function confirmSubmit(e) { return true; }
 </div>
 </div>
 <p class="font-body-md text-body-md text-on-surface">{{ ch.body }}</p>
-<div class="flex items-center gap-2 mt-1">
+<div class="flex items-center justify-between gap-2 mt-1">
+<div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-on-surface-variant text-[16px]">person</span>
 <span class="font-label-sm text-label-sm text-on-surface-variant">Por {{ ch.author_name }}</span>
+</div>
+<a class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary-container hover:text-secondary-fixed transition-colors" href="{% url 'challenge_historial' ch.pk %}">
+<span class="material-symbols-outlined text-[16px]">bar_chart</span> Ver estadísticas
+        </a>
 </div>
 </article>
 {% empty %}

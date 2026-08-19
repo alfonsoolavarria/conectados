@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Mis Desafíos{% endblock %}
+{% block content %}
+<!-- Botón regresar -->
+<section>
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors duration-200" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Regresar
+        </a>
+</section>
+<!-- Encabezado -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl text-secondary-container">emoji_events</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Mis Desafíos</h2>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Historial de desafíos de Cabaña {{ cabin.number }}</p>
+</section>
+<!-- Lista de desafíos -->
+<section class="flex flex-col gap-4">
+{% for item in historial %}
+<article class="bg-surface-container border {% if item.challenge.is_active %}border-secondary-container/50{% else %}border-surface-variant{% endif %} rounded-xl p-5 flex flex-col gap-3">
+<div class="flex items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<span class="w-9 h-9 rounded-xl {% if item.challenge.is_active %}bg-secondary-container/15 border border-secondary-container/40 text-secondary-container{% else %}bg-surface-container-high border border-surface-variant text-on-surface-variant{% endif %} flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">flag</span>
+</span>
+<div class="flex flex-col">
+{% if item.challenge.is_active %}
+<span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Vigente</span>
+{% else %}
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Finalizado</span>
+{% endif %}
+<span class="font-label-sm text-label-sm text-on-surface-variant">{{ item.challenge.fecha_inicio|date:"d M" }} – {{ item.challenge.fecha_fin|date:"d M Y" }} · {{ item.challenge.get_duration_days_display }}</span>
+</div>
+</div>
+<span class="font-display-lg text-display-lg {% if item.porcentaje >= 80 %}text-secondary-container{% elif item.porcentaje >= 40 %}text-on-surface{% else %}text-on-surface-variant{% endif %}">{{ item.porcentaje }}%</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">{{ item.challenge.body }}</p>
+<div class="flex items-center gap-3">
+<div class="h-2 flex-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full {% if item.porcentaje >= 80 %}bg-gradient-to-r from-primary-container to-secondary-container{% elif item.porcentaje >= 40 %}bg-secondary-container{% else %}bg-on-surface-variant{% endif %} rounded-full" style="width: {% widthratio item.porcentaje 100 100 %}%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">{{ item.completed }}/{{ item.total }} días</span>
+</div>
+{% if item.challenge.is_active %}
+<a class="inline-flex items-center gap-1.5 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-4 py-2 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200 w-fit" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Ir al checklist
+        </a>
+{% endif %}
+</article>
+{% empty %}
+<div class="bg-surface-container border border-surface-variant rounded-xl p-8 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">Todavía no hay desafíos en tu cabaña.</p>
+</div>
+{% endfor %}
+</section>
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

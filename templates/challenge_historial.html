@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Historial del Desafío{% endblock %}
+{% block content %}
+<!-- Botón regresar -->
+<section>
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors duration-200" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Regresar
+        </a>
+</section>
+<!-- Encabezado del desafío -->
+<section class="bg-surface-container border border-surface-variant rounded-xl p-6 md:p-8 flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-container">flag</span>
+</span>
+<div class="flex flex-col">
+{% if challenge.is_active %}
+<span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Desafío vigente</span>
+{% else %}
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Finalizado</span>
+{% endif %}
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Cabaña {{ cab.number }}</h2>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface">{{ challenge.body }}</p>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">{{ challenge.fecha_inicio|date:"d M" }} – {{ challenge.fecha_fin|date:"d M Y" }} · {{ challenge.get_duration_days_display }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Por {{ challenge.author_name }}</span>
+</div>
+</section>
+<!-- Resumen -->
+<section class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-primary-container">holiday_village</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ total_campers }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Acampantes</span>
+</div>
+<div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-secondary-container">support_agent</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ total_lideres }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Líderes</span>
+</div>
+<div class="bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-1 text-center">
+<span class="material-symbols-outlined text-2xl text-secondary-container">event_available</span>
+<span class="font-display-lg text-display-lg text-on-surface">{{ challenge.duration_days }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Días</span>
+</div>
+</section>
+<!-- Días del desafío -->
+<section class="flex flex-col gap-4">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">calendar_month</span>
+                Días del desafío
+            </h3>
+<div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-3 md:gap-4">
+{% for day in days %}
+<div class="flex flex-col items-center justify-center p-3 rounded-xl border border-surface-variant bg-surface-container-low">
+<span class="font-label-sm text-label-sm text-on-surface-variant">{{ day.date|date:"d M" }}</span>
+<span class="font-display-lg text-display-lg {% if day.count > 0 %}text-secondary-container{% else %}text-on-surface-variant{% endif %}">{{ day.count }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">completos</span>
+</div>
+{% endfor %}
+</div>
+</section>
+<!-- Progreso por acampante -->
+<section class="flex flex-col gap-4">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">group</span>
+                Progreso de cada uno
+            </h3>
+<div class="flex flex-col gap-3">
+{% for m in miembros %}
+<div class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 flex items-center gap-4 {% if m.is_leader %}border-l-4 border-l-secondary-container{% endif %}">
+<div class="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 {% if m.is_leader %}border-secondary-container/70 bg-secondary-container/15 text-secondary-container{% else %}border-primary/40 text-primary{% endif %}">
+<span class="font-label-sm text-label-sm">{{ m.member.full_name|slice:":1" }}</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-2">
+<span class="font-body-md text-body-md text-on-surface truncate">{{ m.member.full_name }}</span>
+{% if m.is_leader %}
+<span class="inline-flex items-center gap-1 bg-secondary-container/15 border border-secondary-container/40 rounded-full px-2 py-0.5 font-label-sm text-label-sm text-secondary-container shrink-0">
+<span class="material-symbols-outlined text-[12px]">shield_person</span>Líder
+</span>
+{% endif %}
+</div>
+<div class="flex items-center gap-3 mt-1">
+<div class="h-2 flex-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full {% if m.porcentaje >= 80 %}bg-gradient-to-r from-primary-container to-secondary-container{% elif m.porcentaje >= 40 %}bg-secondary-container{% else %}bg-on-surface-variant{% endif %} rounded-full" style="width: {% widthratio m.porcentaje 100 100 %}%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">{{ m.completed }}/{{ m.total }}</span>
+<span class="font-label-sm text-label-sm {% if m.porcentaje >= 80 %}text-secondary-container{% elif m.porcentaje >= 40 %}text-on-surface{% else %}text-on-surface-variant{% endif %} shrink-0">{{ m.porcentaje }}%</span>
+</div>
+</div>
+</div>
+{% endfor %}
+</div>
+</section>
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

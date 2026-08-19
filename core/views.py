@@ -381,6 +381,92 @@ def challenge(request, cabin_id):
 
 
 @login_required
+def challenge_historial(request, challenge_id):
+    ch = get_object_or_404(Challenge, pk=challenge_id)
+    member = getattr(request.user, "member", None)
+    if member is None:
+        return HttpResponseRedirect(reverse("home"))
+    cab = ch.cabin
+    if member.role == "leader" and member.cabin_id != cab.pk:
+        return HttpResponseRedirect(reverse("home"))
+    if member.role == "camper" and member.cabin_id != cab.pk:
+        return HttpResponseRedirect(reverse("home"))
+
+    inicio = ch.fecha_inicio
+    fin = ch.fecha_fin
+    completados = DailyCommitment.objects.filter(
+        date__gte=inicio, date__lte=fin, is_completed=True
+    )
+    completados_por_user = {}
+    for user_id, total in completados.values_list("user_id").annotate(total=Count("id")):
+        completados_por_user[user_id] = total
+
+    miembros_con_progreso = []
+    for m in cab.members.filter(is_active=True).select_related("user").order_by("role", "full_name"):
+        user_completados = completados_por_user.get(m.user_id, 0) if m.user else 0
+        miembros_con_progreso.append({
+            "member": m,
+            "completed": user_completados,
+            "total": ch.duration_days,
+            "is_leader": m.role == "leader",
+            "porcentaje": round(user_completados / ch.duration_days * 100) if ch.duration_days else 0,
+        })
+
+    dias = []
+    for i in range(ch.duration_days):
+        dia_date = inicio + timedelta(days=i)
+        count = completados.filter(date=dia_date).count()
+        dias.append({
+            "number": dia_date.day,
+            "date": dia_date,
+            "count": count,
+        })
+
+    return render(
+        request,
+        "challenge_historial.html",
+        {
+            "challenge": ch,
+            "cab": cab,
+            "miembros": miembros_con_progreso,
+            "dias": dias,
+            "total_campers": sum(1 for m in miembros_con_progreso if not m["is_leader"]),
+            "total_lideres": sum(1 for m in miembros_con_progreso if m["is_leader"]),
+        },
+    )
+
+
+@login_required
+def mis_desafios(request):
+    member = getattr(request.user, "member", None)
+    if member is None:
+        return HttpResponseRedirect(reverse("home"))
+    cabin = member.cabin
+    challenges = cabin.challenges.order_by("-created_at")
+    historial = []
+    for ch in challenges:
+        inicio = ch.fecha_inicio
+        fin = ch.fecha_fin
+        completados = DailyCommitment.objects.filter(
+            user=request.user, date__gte=inicio, date__lte=fin, is_completed=True
+        ).count()
+        historial.append({
+            "challenge": ch,
+            "completed": completados,
+            "total": ch.duration_days,
+            "porcentaje": round(completados / ch.duration_days * 100) if ch.duration_days else 0,
+        })
+    return render(
+        request,
+        "mis_desafios.html",
+        {
+            "historial": historial,
+            "cabin": cabin,
+        },
+    )
+
+
+@login_required
 def qr_lideres(request):
     member = getattr(request.user, "member", None)
     if member is None or member.role != "leader":
