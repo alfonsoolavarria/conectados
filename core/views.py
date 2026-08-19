@@ -75,7 +75,7 @@ def _mes_dias(user, ref_date=None, challenge=None):
         for i in range(challenge.duration_days):
             dia_date = inicio + timedelta(days=i)
             dias.append({
-                "number": i + 1,
+                "number": dia_date.day,
                 "date": dia_date,
                 "completed": dia_date in completados,
                 "is_today": dia_date == hoy,
