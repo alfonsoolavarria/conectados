@@ -3,6 +3,7 @@ import os
 from datetime import date, datetime, timedelta
 
 import segno
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -394,3 +395,30 @@ def cambiar_contrasena(request):
         messages.success(request, "Contraseña actualizada." if nueva else "Continuaste sin cambiar.")
         return HttpResponseRedirect(reverse("home"))
     return render(request, "cambiar_contrasena.html")
+
+
+@login_required
+def perfil_imagen(request):
+    member = getattr(request.user, "member", None)
+    if member is None:
+        return HttpResponseRedirect(reverse("home"))
+
+    perfiles_dir = settings.BASE_DIR / "perfiles"
+    imagenes = sorted(
+        f.name for f in perfiles_dir.iterdir()
+        if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")
+    )
+
+    if request.method == "POST":
+        seleccion = request.POST.get("imagen", "").strip()
+        if seleccion in imagenes:
+            member.profile_image = seleccion
+            member.save(update_fields=["profile_image"])
+            messages.success(request, "Imagen de perfil actualizada.")
+            return HttpResponseRedirect(reverse("home"))
+
+    return render(
+        request,
+        "perfil_imagen.html",
+        {"imagenes": imagenes, "actual": member.profile_image},
+    )

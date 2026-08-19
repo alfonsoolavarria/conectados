@@ -104,6 +104,12 @@ class Member(models.Model):
     must_change_password = models.BooleanField(
         default=True, verbose_name="Debe cambiar contraseña"
     )
+    profile_image = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="Imagen de perfil",
+    )
 
     class Meta:
         constraints = [

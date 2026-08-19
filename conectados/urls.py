@@ -15,5 +15,6 @@ urlpatterns = [
     path('desafio/<int:cabin_id>/', views.challenge, name='challenge'),
     path('qr/', views.qr_lideres, name='qr_lideres'),
     path('cambiar-contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
+    path('perfil-imagen/', views.perfil_imagen, name='perfil_imagen'),
     path('', views.home, name='home'),
 ]

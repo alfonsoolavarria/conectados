@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 
 <html class="dark" lang="es"><head>
@@ -134,7 +135,11 @@
 </button>
 </form>
 <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-variant hover:border-primary transition-colors cursor-pointer active:scale-95 transition-transform">
-<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A close-up digital avatar portrait of a young adult camper in a dark, cyberpunk-inspired high-tech environment. The lighting is cinematic with subtle red and yellow edge-lighting against deep black shadows. The style is hyper-realistic with glowing neon accents reflecting in their eyes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdHNAeI0GNmCWFObaPv4XUFKDbvKm-GB1WQN3Ahr9-OAVedEFvmH-NqUfmQ-GgxsWwjOjtvF9JQRNoicSppFfEUejptjq6jM9j-mUzUc3OGvN4nL7peWLkzS-gQrM4jdAHCOiaNnsqkK2TqcqDWtgs21aSKMrpWB5mo-x72NronGUnpYZSf6-gCEeQXPwN5pm_0k_YoBf4Vw0Ku3XT6Bb3NNsPHQ5cxQBvnueaEDkd9th5y0BmONva"/>
+{% if profile_image %}
+<a href="{% url 'perfil_imagen' %}"><img alt="Mi perfil" class="w-full h-full object-cover" src="{% static profile_image %}"/></a>
+{% else %}
+<a href="{% url 'perfil_imagen' %}"><img alt="User profile photo" class="w-full h-full object-cover" data-alt="A close-up digital avatar portrait of a young adult camper in a dark, cyberpunk-inspired high-tech environment. The lighting is cinematic with subtle red and yellow edge-lighting against deep black shadows. The style is hyper-realistic with glowing neon accents reflecting in their eyes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdHNAeI0GNmCWFObaPv4XUFKDbvKm-GB1WQN3Ahr9-OAVedEFvmH-NqUfmQ-GgxsWwjOjtvF9JQRNoicSppFfEUejptjq6jM9j-mUzUc3OGvN4nL7peWLkzS-gQrM4jdAHCOiaNnsqkK2TqcqDWtgs21aSKMrpWB5mo-x72NronGUnpYZSf6-gCEeQXPwN5pm_0k_YoBf4Vw0Ku3XT6Bb3NNsPHQ5cxQBvnueaEDkd9th5y0BmONva"/></a>
+{% endif %}
 </div>
 </div>
 </header>

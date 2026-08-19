@@ -1,11 +1,18 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Conectados 3.0 - Checklist{% endblock %}
 {% block content %}
 <!-- Profile Card Module -->
 <section class="bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl p-6 md:p-8 flex items-center gap-6 shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
 <div class="circuit-line"></div>
 <div class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-primary/50 relative z-10 shrink-0">
+<a href="{% url 'perfil_imagen' %}">
+{% if profile_image %}
+<img alt="{{ user.get_full_name|default:user.username }}" class="w-full h-full object-cover" src="{% static profile_image %}"/>
+{% else %}
 <img alt="{{ user.get_full_name|default:user.username }}" class="w-full h-full object-cover" data-alt="A close-up digital avatar portrait of a young adult camper in a dark, cyberpunk-inspired high-tech environment. The lighting is cinematic with subtle red and yellow edge-lighting against deep black shadows. The style is hyper-realistic with glowing neon accents reflecting in their eyes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaCiYnkrkO5CqAFWPwVD9-8bs6GHCndn7R44D5xq4TMyBs9bwBzIz8uwDibfxMihdgIPYNpu0UvckiTjRmg1RPAWJIRTPLHOti3hul-6cdPcJQzd6iPY5aKmcY_Fn6y6RsuEC8Skz8WfSuDnEghN6-nLagh9aQZpLrTTwAYCjwzyODmn4eetWaUAfuWstmuAmoXuN9PvE7OyFdCuu21Z120e6sSyZoxL-0982gIBctR8boIkF0346m"/>
+{% endif %}
+</a>
 <div class="absolute inset-0 ring-inset ring-2 ring-primary-container rounded-full opacity-50 mix-blend-overlay"></div>
 </div>
 <div class="flex flex-col justify-center relative z-10">
