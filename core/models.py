@@ -110,6 +110,12 @@ class Member(models.Model):
         default="",
         verbose_name="Imagen de perfil",
     )
+    birth_date = models.DateField(
+        null=True, blank=True, verbose_name="Fecha de nacimiento"
+    )
+    church = models.CharField(
+        max_length=150, blank=True, verbose_name="Iglesia"
+    )
 
     class Meta:
         constraints = [

@@ -19,5 +19,6 @@ urlpatterns = [
     path('qr/', views.qr_lideres, name='qr_lideres'),
     path('cambiar-contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     path('perfil-imagen/', views.perfil_imagen, name='perfil_imagen'),
+    path('competencias/', views.competencias, name='competencias'),
     path('', views.home, name='home'),
 ]

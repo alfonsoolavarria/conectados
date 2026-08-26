@@ -558,6 +558,28 @@ def perfil_imagen(request):
     )
 
     if request.method == "POST":
+        if "save_profile" in request.POST:
+            first = request.POST.get("first_name", "").strip()
+            last = request.POST.get("last_name", "").strip()
+            phone = request.POST.get("phone", "").strip()
+            church = request.POST.get("church", "").strip()
+            birth_raw = request.POST.get("birth_date", "").strip()
+            birth_date = None
+            if birth_raw:
+                try:
+                    birth_date = datetime.strptime(birth_raw, "%Y-%m-%d").date()
+                except ValueError:
+                    pass
+            request.user.first_name = first
+            request.user.last_name = last
+            request.user.save(update_fields=["first_name", "last_name"])
+            member.phone = phone
+            member.church = church
+            member.birth_date = birth_date
+            member.save(update_fields=["phone", "church", "birth_date"])
+            messages.success(request, "Perfil actualizado.")
+            return HttpResponseRedirect(reverse("perfil_imagen"))
+
         seleccion = request.POST.get("imagen", "").strip()
         if seleccion in imagenes:
             member.profile_image = seleccion
@@ -568,5 +590,61 @@ def perfil_imagen(request):
     return render(
         request,
         "perfil_imagen.html",
-        {"imagenes": imagenes, "actual": member.profile_image},
+        {
+            "imagenes": imagenes,
+            "actual": member.profile_image,
+            "member": member,
+        },
+    )
+
+
+COLORES_COMPETENCIA = [
+    {"id": "blanco", "label": "Blanco", "bg": "#f0eeec", "text": "#1c1b1b", "border": "#ccc"},
+    {"id": "verde", "label": "Verde", "bg": "#1b5e20", "text": "#ffffff", "border": "#4caf50"},
+    {"id": "amarillo", "label": "Amarillo", "bg": "#f9a825", "text": "#1c1b1b", "border": "#fdd835"},
+    {"id": "rojo", "label": "Rojo", "bg": "#b71c1c", "text": "#ffffff", "border": "#e53935"},
+    {"id": "azul", "label": "Azul", "bg": "#1565c0", "text": "#ffffff", "border": "#42a5f5"},
+    {"id": "negro", "label": "Negro", "bg": "#212121", "text": "#ffffff", "border": "#555"},
+]
+
+IMG_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".gif")
+
+
+@login_required
+def competencias(request):
+    member = getattr(request.user, "member", None)
+    if member is None:
+        return HttpResponseRedirect(reverse("home"))
+
+    color_filter = request.GET.get("color", "blanco")
+    competencia_dir = settings.BASE_DIR / "static" / "competencia"
+
+    fotos_por_color = {}
+    for color_data in COLORES_COMPETENCIA:
+        cid = color_data["id"]
+        color_dir = competencia_dir / cid
+        fotos = []
+        if color_dir.is_dir():
+            fotos = sorted(
+                f.name for f in color_dir.iterdir()
+                if f.suffix.lower() in IMG_EXTS
+            )
+        fotos_por_color[cid] = [f"competencia/{cid}/{f}" for f in fotos]
+
+    fotos_actuales = fotos_por_color.get(color_filter, [])
+
+    colores_con_conteo = []
+    for color_data in COLORES_COMPETENCIA:
+        cid = color_data["id"]
+        count = len(fotos_por_color.get(cid, []))
+        colores_con_conteo.append({**color_data, "count": count})
+
+    return render(
+        request,
+        "competencias.html",
+        {
+            "colores": colores_con_conteo,
+            "color_actual": color_filter,
+            "fotos": fotos_actuales,
+        },
     )

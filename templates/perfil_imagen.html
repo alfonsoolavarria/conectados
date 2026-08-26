@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Conectados 3.0 - Imagen de Perfil{% endblock %}
+{% block title %}Conectados 3.0 - Mi Perfil{% endblock %}
 {% block content %}
 <!-- Botón regresar -->
 <section>
@@ -13,9 +13,9 @@
 <section class="flex flex-col gap-4">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-3xl text-secondary-container">person</span>
-<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Elige tu imagen de perfil</h2>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Mi Perfil</h2>
 </div>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Selecciona una imagen que te represente. Puedes cambiarla cuando quieras.</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Actualiza tu información personal y elige tu imagen.</p>
 </section>
 <!-- Imagen actual -->
 {% if actual %}
@@ -47,4 +47,44 @@
         </button>
 </form>
 </section>
+<!-- Datos personales -->
+<section class="bg-surface-container border border-surface-variant rounded-xl p-6 md:p-8 flex flex-col gap-5">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">badge</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Datos personales</h3>
+</div>
+<form method="post" class="flex flex-col gap-4">
+{% csrf_token %}
+<input type="hidden" name="save_profile" value="1"/>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<label class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Nombre</span>
+<input type="text" name="first_name" value="{{ request.user.first_name }}" placeholder="Tu nombre" class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 transition-colors"/>
+</label>
+<label class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Apellido</span>
+<input type="text" name="last_name" value="{{ request.user.last_name }}" placeholder="Tu apellido" class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 transition-colors"/>
+</label>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<label class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Fecha de nacimiento</span>
+<input type="date" name="birth_date" value="{{ member.birth_date|date:'Y-m-d'|default:'' }}" class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 transition-colors"/>
+</label>
+<label class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Teléfono</span>
+<input type="tel" name="phone" value="{{ member.phone }}" placeholder="Ej: 0412-1234567" class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 transition-colors"/>
+</label>
+</div>
+<label class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Iglesia</span>
+<input type="text" name="church" value="{{ member.church }}" placeholder="Nombre de tu iglesia" class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 transition-colors"/>
+</label>
+<button type="submit" class="mt-2 inline-flex items-center justify-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-6 py-3 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200 w-fit">
+<span class="material-symbols-outlined text-[18px]">save</span>
+            Guardar perfil
+        </button>
+</form>
+</section>
 {% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

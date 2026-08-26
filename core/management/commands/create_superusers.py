@@ -31,19 +31,32 @@ class Command(BaseCommand):
                     "last_name": data["last_name"],
                 },
             )
-            if created:
+            changed = False
+            if not created:
+                for field, value in [
+                    ("email", data["email"]),
+                    ("first_name", data["first_name"]),
+                    ("last_name", data["last_name"]),
+                ]:
+                    if getattr(user, field) != value:
+                        setattr(user, field, value)
+                        changed = True
+            if created or not user.is_superuser or not user.is_staff:
                 user.set_password(data["password"])
                 user.is_staff = True
                 user.is_superuser = True
+                changed = True
+            if changed:
                 user.save()
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"Superusuario '{data['username']}' creado."
+                        f"Superusuario '{data['username']}' "
+                        f"{'creado' if created else 'actualizado'}."
                     )
                 )
             else:
                 self.stdout.write(
-                    f"Superusuario '{data['username']}' ya existe."
+                    f"Superusuario '{data['username']}' sin cambios."
                 )
 
             cabin = Cabin.objects.filter(number=data["member_cabin"]).first()
