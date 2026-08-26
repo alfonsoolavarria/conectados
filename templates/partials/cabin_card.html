@@ -55,9 +55,9 @@
 {% endif %}
 <div class="campers-panel">
 {% if cab.campers %}
-<div class="flex flex-col gap-3 mt-2">
+<div class="campers-grid flex flex-col gap-3 mt-2">
 {% for camper in cab.campers %}
-<div class="bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 flex items-center gap-4 {% if camper.is_leader %}border-l-4 border-l-secondary-container{% endif %}">
+<div class="camper-item bg-surface-container-low border border-surface-variant rounded-lg px-4 py-3 flex items-center gap-4 {% if camper.is_leader %}border-l-4 border-l-secondary-container{% endif %}">
 <div class="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 {% if camper.is_leader %}border-secondary-container/70 bg-secondary-container/15 text-secondary-container{% elif genero == "F" %}border-secondary-container/50 text-secondary-container{% else %}border-primary/40 text-primary{% endif %}">
 <span class="font-label-sm text-label-sm">{{ camper.member.full_name|slice:":1" }}</span>
 </div>

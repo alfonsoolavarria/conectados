@@ -67,25 +67,32 @@
 <span class="material-symbols-outlined text-secondary-container">filter_list</span>
 <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Filtrar cabañas</h3>
 </div>
-<div class="flex flex-wrap gap-3">
-<label class="inline-flex items-center gap-2 bg-surface-container border border-secondary-container/60 rounded-full px-4 py-2 font-label-sm text-label-sm text-on-surface cursor-pointer transition-colors hover:bg-secondary-container/10">
-<input type="radio" name="cabin-filter" value="all" checked onchange="filterCabins('all')" class="accent-secondary-container"/>
-<span class="material-symbols-outlined text-[16px] text-secondary-container">holiday_village</span>
-            Todas ({{ cabins|length }})
-        </label>
+<div class="flex flex-wrap items-center gap-4">
+<div class="flex items-center gap-2">
+<label for="cabin-select" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Cabañas</label>
+<select id="cabin-select" onchange="uncheckMineRadio(); filterCabins(this.value)" class="bg-surface-container border border-outline-variant rounded-full px-4 py-2 font-label-sm text-label-sm text-on-surface cursor-pointer transition-colors hover:border-secondary-container/60 hover:bg-secondary-container/10 focus:outline-none focus:border-secondary-container">
+<option value="all" selected>Todas ({{ cabins|length }})</option>
+{% for cab in cabins %}
+<option value="{{ cab.cabin.number }}">Cabaña {{ cab.cabin.number }} - {{ cab.cabin.get_gender_display_es }}</option>
+{% endfor %}
+</select>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-px h-6 bg-surface-variant"></span>
 <label class="inline-flex items-center gap-2 bg-surface-container border border-outline-variant rounded-full px-4 py-2 font-label-sm text-label-sm text-on-surface cursor-pointer transition-colors hover:border-secondary-container/60 hover:bg-secondary-container/10">
-<input type="radio" name="cabin-filter" value="mine" onchange="filterCabins('mine')" class="accent-secondary-container"/>
+<input type="radio" name="cabin-filter" value="mine" onchange="resetSelectToAll(); filterCabins('mine')" class="accent-secondary-container"/>
 <span class="material-symbols-outlined text-[16px] text-secondary-container">home</span>
             Mi cabaña (Cabaña {{ request.user.member.cabin.number }})
         </label>
 </div>
+</div>
 </section>
 <!-- Cabañas: dos columnas por género -->
 <section class="flex flex-col gap-8">
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+<div id="cabins-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 <!-- Columna Chicas -->
-<div class="flex flex-col gap-4">
-<header class="flex items-center justify-between gap-4">
+<div id="col-fem" class="flex flex-col gap-4">
+<header id="header-fem" class="flex items-center justify-between gap-4">
 <div class="flex items-center gap-3">
 <span class="w-10 h-10 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
 <span class="material-symbols-outlined text-secondary-container">female</span>
@@ -102,8 +109,8 @@
 {% endfor %}
 </div>
 <!-- Columna Chicos -->
-<div class="flex flex-col gap-4">
-<header class="flex items-center justify-between gap-4">
+<div id="col-masc" class="flex flex-col gap-4">
+<header id="header-masc" class="flex items-center justify-between gap-4">
 <div class="flex items-center gap-3">
 <span class="w-10 h-10 rounded-xl bg-primary-container/15 border border-primary-container/40 flex items-center justify-center">
 <span class="material-symbols-outlined text-primary-container">male</span>
@@ -140,14 +147,82 @@ function toggleMyChallenges() {
     chevron.classList.toggle("rotate-180");
     chevron.classList.toggle("rotate-0");
 }
+function uncheckMineRadio() {
+    document.querySelector('input[name="cabin-filter"][value="mine"]').checked = false;
+}
+function resetSelectToAll() {
+    document.getElementById('cabin-select').value = 'all';
+}
 function filterCabins(mode) {
-    document.querySelectorAll("[data-cabin-number]").forEach(function(card) {
-        if (mode === "mine") {
-            card.style.display = card.getAttribute("data-es-mia") === "true" ? "" : "none";
-        } else {
-            card.style.display = "";
+    var grid = document.getElementById('cabins-grid');
+    var allCards = document.querySelectorAll("[data-cabin-number]");
+    var headerFem = document.getElementById('header-fem');
+    var headerMasc = document.getElementById('header-masc');
+    
+    // Reset campers grids to vertical
+    document.querySelectorAll('.campers-grid').forEach(function(g) {
+        g.classList.remove('grid', 'grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-2');
+        g.classList.add('flex', 'flex-col', 'gap-3');
+    });
+    
+    // Show all cards, panels, headers
+    allCards.forEach(function(card) { card.style.display = ""; });
+    document.querySelectorAll('.campers-panel').forEach(function(p) {
+        p.classList.remove('hidden');
+    });
+    if (headerFem) headerFem.style.display = "";
+    if (headerMasc) headerMasc.style.display = "";
+    
+    // Reset chevrons to expanded
+    allCards.forEach(function(card) {
+        var panel = card.querySelector('.campers-panel');
+        var btn = card.querySelector('button[onclick*="toggleCabin"]');
+        if (panel) panel.classList.remove('hidden');
+        if (btn) {
+            var chevron = btn.querySelector('.material-symbols-outlined');
+            if (chevron) { chevron.classList.remove('rotate-180'); chevron.classList.add('rotate-0'); }
+            btn.setAttribute('aria-expanded', 'true');
         }
     });
+    
+    // Sync controls
+    if (mode === 'mine') {
+        document.getElementById('cabin-select').value = 'all';
+    } else {
+        var radio = document.querySelector('input[name="cabin-filter"][value="mine"]');
+        if (radio) radio.checked = false;
+    }
+    
+    // ALL
+    if (mode === 'all') {
+        grid.classList.remove('grid-cols-1');
+        grid.classList.add('lg:grid-cols-2');
+        return;
+    }
+    
+    // Single column for mine / specific cabin
+    grid.classList.add('grid-cols-1');
+    grid.classList.remove('lg:grid-cols-2');
+    
+    // MINE
+    if (mode === 'mine') {
+        allCards.forEach(function(card) {
+            var isMine = card.getAttribute("data-es-mia") === "true";
+            card.style.display = isMine ? "" : "none";
+        });
+        return;
+    }
+    
+    // SPECIFIC CABIN
+    allCards.forEach(function(card) {
+        if (card.getAttribute("data-cabin-number") === mode) {
+            card.style.display = "";
+        } else {
+            card.style.display = "none";
+        }
+    });
+    if (headerFem) headerFem.style.display = "none";
+    if (headerMasc) headerMasc.style.display = "none";
 }
 </script>
 {% endblock %}

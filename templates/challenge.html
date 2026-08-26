@@ -120,9 +120,14 @@ function confirmSubmit(e) { return true; }
 <span class="material-symbols-outlined text-on-surface-variant text-[16px]">person</span>
 <span class="font-label-sm text-label-sm text-on-surface-variant">Por {{ ch.author_name }}</span>
 </div>
+<div class="flex items-center gap-3">
+<button type="button" data-edit-pk="{{ ch.pk }}" data-edit-body="{{ ch.body|escapejs }}" data-edit-duration="{{ ch.duration_days }}" onclick="openEditModal(this)" class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary-container hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span> Editar
+        </button>
 <a class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary-container hover:text-secondary-fixed transition-colors" href="{% url 'challenge_historial' ch.pk %}">
 <span class="material-symbols-outlined text-[16px]">bar_chart</span> Ver estadísticas
         </a>
+</div>
 </div>
 </article>
 {% empty %}
@@ -131,5 +136,59 @@ function confirmSubmit(e) { return true; }
 </div>
 {% endfor %}
 </section>
+<!-- Modal Editar Desafío -->
+<div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+<div class="bg-surface-container border border-secondary-container/40 rounded-xl p-6 md:p-8 max-w-lg w-full mx-4 flex flex-col gap-5 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-container">edit</span>
+</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Editar Desafío</h3>
+</div>
+<form method="post" id="edit-challenge-form" class="flex flex-col gap-4">
+{% csrf_token %}
+<input type="hidden" id="edit-challenge-id" name="challenge_id"/>
+<label for="edit-body" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Descripción</span>
+<textarea id="edit-body" name="body" rows="4" maxlength="500" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 resize-none"></textarea>
+</label>
+<label for="edit-duration" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Duración</span>
+<div class="relative">
+<select id="edit-duration" name="duration_days" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 cursor-pointer">
+<option value="5">5 días</option>
+<option value="10">10 días</option>
+<option value="20">20 días</option>
+<option value="30">30 días</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</label>
+<div class="flex items-center gap-3 justify-end mt-2">
+<button type="button" onclick="closeEditModal()" class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface border border-outline-variant rounded-full px-4 py-2 transition-colors">
+                Cancelar
+            </button>
+<button type="submit" class="font-label-sm text-label-sm text-on-secondary-container bg-secondary-container font-bold rounded-full px-4 py-2 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200">
+<span class="material-symbols-outlined text-[16px] mr-1 align-middle">check</span> Guardar
+            </button>
+</div>
+</form>
+</div>
+</div>
+<script>
+function openEditModal(btn) {
+    var pk = btn.getAttribute('data-edit-pk');
+    var body = btn.getAttribute('data-edit-body');
+    var duration = btn.getAttribute('data-edit-duration');
+    document.getElementById('edit-challenge-id').value = pk;
+    document.getElementById('edit-body').value = body;
+    document.getElementById('edit-duration').value = duration;
+    document.getElementById('edit-challenge-form').action = '/desafio-editar/' + pk + '/';
+    document.getElementById('edit-modal').classList.remove('hidden');
+}
+function closeEditModal() {
+    document.getElementById('edit-modal').classList.add('hidden');
+}
+</script>
 {% endblock %}
 {% block bottom_nav %}{% endblock bottom_nav %}

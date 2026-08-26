@@ -381,6 +381,22 @@ def challenge(request, cabin_id):
 
 
 @login_required
+def edit_challenge(request, challenge_id):
+    ch = get_object_or_404(Challenge, pk=challenge_id)
+    member = getattr(request.user, "member", None)
+    if member is None or member.role != "leader" or member.cabin_id != ch.cabin_id:
+        return HttpResponseRedirect(reverse("home"))
+    if request.method == "POST":
+        body = request.POST.get("body", "").strip()
+        duration = int(request.POST.get("duration_days", ch.duration_days))
+        if body:
+            ch.body = body
+            ch.duration_days = duration
+            ch.save(update_fields=["body", "duration_days"])
+    return HttpResponseRedirect(reverse("challenge", args=[ch.cabin_id]))
+
+
+@login_required
 def challenge_historial(request, challenge_id):
     ch = get_object_or_404(Challenge, pk=challenge_id)
     member = getattr(request.user, "member", None)

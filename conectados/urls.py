@@ -13,6 +13,7 @@ urlpatterns = [
     path('mensajeria/', views.mensajeria, name='mensajeria'),
     path('mensajeria/<int:user_id>/', views.conversacion, name='conversacion'),
     path('desafio/<int:cabin_id>/', views.challenge, name='challenge'),
+    path('desafio-editar/<int:challenge_id>/', views.edit_challenge, name='edit_challenge'),
     path('desafio-historial/<int:challenge_id>/', views.challenge_historial, name='challenge_historial'),
     path('mis-desafios/', views.mis_desafios, name='mis_desafios'),
     path('qr/', views.qr_lideres, name='qr_lideres'),
