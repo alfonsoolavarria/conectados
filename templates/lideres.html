@@ -70,7 +70,7 @@
 <div class="flex flex-wrap items-center gap-4">
 <div class="flex items-center gap-2">
 <label for="cabin-select" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Cabañas</label>
-<select id="cabin-select" onchange="uncheckMineRadio(); filterCabins(this.value)" class="bg-surface-container border border-outline-variant rounded-full px-4 py-2 font-label-sm text-label-sm text-on-surface cursor-pointer transition-colors hover:border-secondary-container/60 hover:bg-secondary-container/10 focus:outline-none focus:border-secondary-container">
+<select id="cabin-select" onchange="uncheckMineRadio(); filterCabins(this.value)" class="bg-[#2a2a2a] border border-[#5d3f3d] rounded-full px-4 py-2 font-label-sm text-label-sm text-[#e5e2e1] cursor-pointer transition-colors hover:border-[#fabd00]/60 hover:bg-[#fabd00]/10 focus:outline-none focus:border-[#fabd00]">
 <option value="all" selected>Todas ({{ cabins|length }})</option>
 {% for cab in cabins %}
 <option value="{{ cab.cabin.number }}">Cabaña {{ cab.cabin.number }} - {{ cab.cabin.get_gender_display_es }}</option>
@@ -210,6 +210,8 @@ function filterCabins(mode) {
             var isMine = card.getAttribute("data-es-mia") === "true";
             card.style.display = isMine ? "" : "none";
         });
+        if (headerFem) headerFem.style.display = "none";
+        if (headerMasc) headerMasc.style.display = "none";
         return;
     }
     

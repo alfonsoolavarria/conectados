@@ -5,6 +5,12 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>{% block title %}Conectados 3.0{% endblock %}</title>
+<script>
+(function() {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'light') document.documentElement.classList.replace('dark','light');
+})();
+</script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -38,15 +44,6 @@
                       "on-secondary-container": "#6a4e00",
                       "primary": "#ffb3ae",
                       "secondary-container": "#fabd00",
-                      "on-primary-fixed": "#410005",
-                      "on-primary-fixed-variant": "#930016",
-                      "surface-container-highest": "#353534",
-                      "outline": "#ae8885",
-                      "surface-bright": "#3a3939",
-                      "on-tertiary-fixed": "#1b1c1c",
-                      "tertiary": "#c7c6c6",
-                      "on-tertiary-fixed-variant": "#464747",
-                      "surface-container": "#201f1f",
                       "on-primary": "#68000c",
                       "primary-container": "#e6192e",
                       "surface": "#131313",
@@ -96,13 +93,8 @@
         }
     </script>
 <style>
-        body {
-            background-image: radial-gradient(circle at 50% 0%, rgba(230, 25, 46, 0.05) 0%, transparent 50%),
-                              linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 32px 32px, 32px 32px;
-            background-attachment: fixed;
-        }
+        /* Dark theme (default) */
+        .dark { color-scheme: dark; }
         .glow-active {
             box-shadow: 0 0 15px rgba(230, 25, 46, 0.3);
         }
@@ -128,18 +120,26 @@
 <h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary tracking-tight">Conectados 3.0</h1>
 </a>
 <div class="flex items-center gap-3">
+<button type="button" onclick="toggleTheme()" id="theme-toggle" class="flex items-center justify-center w-10 h-10 rounded-full border border-surface-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95 transition-transform" title="Cambiar tema">
+<span class="material-symbols-outlined" id="theme-icon">light_mode</span>
+</button>
 <form action="{% url 'logout' %}" method="post" class="flex items-center justify-center w-10 h-10 rounded-full border border-surface-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95 transition-transform" title="Cerrar sesión">
 {% csrf_token %}
 <button type="submit" class="flex items-center justify-center w-full h-full">
 <span class="material-symbols-outlined">logout</span>
 </button>
 </form>
-<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-variant hover:border-primary transition-colors cursor-pointer active:scale-95 transition-transform">
+<div class="flex items-center gap-2">
+<a href="{% url 'perfil_imagen' %}" class="flex items-center gap-2 group">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-variant hover:border-primary transition-colors active:scale-95 transition-transform">
 {% if profile_image %}
-<a href="{% url 'perfil_imagen' %}"><img alt="Mi perfil" class="w-full h-full object-cover" src="{% static profile_image %}"/></a>
+<img alt="Mi perfil" class="w-full h-full object-cover" src="{% static profile_image %}"/>
 {% else %}
-<a href="{% url 'perfil_imagen' %}"><img alt="User profile photo" class="w-full h-full object-cover" data-alt="A close-up digital avatar portrait of a young adult camper in a dark, cyberpunk-inspired high-tech environment. The lighting is cinematic with subtle red and yellow edge-lighting against deep black shadows. The style is hyper-realistic with glowing neon accents reflecting in their eyes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdHNAeI0GNmCWFObaPv4XUFKDbvKm-GB1WQN3Ahr9-OAVedEFvmH-NqUfmQ-GgxsWwjOjtvF9JQRNoicSppFfEUejptjq6jM9j-mUzUc3OGvN4nL7peWLkzS-gQrM4jdAHCOiaNnsqkK2TqcqDWtgs21aSKMrpWB5mo-x72NronGUnpYZSf6-gCEeQXPwN5pm_0k_YoBf4Vw0Ku3XT6Bb3NNsPHQ5cxQBvnueaEDkd9th5y0BmONva"/></a>
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A close-up digital avatar portrait of a young adult camper in a dark, cyberpunk-inspired high-tech environment. The lighting is cinematic with subtle red and yellow edge-lighting against deep black shadows. The style is hyper-realistic with glowing neon accents reflecting in their eyes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdHNAeI0GNmCWFObaPv4XUFKDbvKm-GB1WQN3Ahr9-OAVedEFvmH-NqUfmQ-GgxsWwjOjtvF9JQRNoicSppFfEUejptjq6jM9j-mUzUc3OGvN4nL7peWLkzS-gQrM4jdAHCOiaNnsqkK2TqcqDWtgs21aSKMrpWB5mo-x72NronGUnpYZSf6-gCEeQXPwN5pm_0k_YoBf4Vw0Ku3XT6Bb3NNsPHQ5cxQBvnueaEDkd9th5y0BmONva"/>
 {% endif %}
+</div>
+<span class="hidden md:inline font-label-sm text-label-sm text-on-surface-variant group-hover:text-primary transition-colors">{{ request.user.first_name|default:request.user.username }}</span>
+</a>
 </div>
 </div>
 </header>
@@ -212,11 +212,88 @@ Omitir
 </div>
 </div>
 </div>
+{% endif %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var modal = document.getElementById('pw-modal');
     if (modal) modal.style.display = 'flex';
+    applyThemeIcon();
 });
+function applyThemeIcon() {
+    var icon = document.getElementById('theme-icon');
+    if (!icon) return;
+    icon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+}
+function toggleTheme() {
+    var html = document.documentElement;
+    if (html.classList.contains('dark')) {
+        html.classList.replace('dark', 'light');
+        localStorage.setItem('theme', 'light');
+        injectLightOverrides();
+    } else {
+        html.classList.replace('light', 'dark');
+        localStorage.setItem('theme', 'dark');
+        removeLightOverrides();
+    }
+    applyThemeIcon();
+}
+function injectLightOverrides() {
+    if (document.getElementById('light-overrides')) return;
+    var style = document.createElement('style');
+    style.id = 'light-overrides';
+    style.textContent = `
+html.light { color-scheme: light; }
+html.light body { background-color: #e8e6e4 !important; color: #1c1b1b !important; }
+html.light header { background-color: #e8e6e4 !important; border-color: #ccc !important; }
+html.light nav { background-color: #f0eeec !important; border-color: #ccc !important; }
+html.light .bg-background { background-color: #e8e6e4 !important; }
+html.light .text-on-background, html.light .text-on-surface { color: #1c1b1b !important; }
+html.light .text-on-surface-variant { color: #5a5654 !important; }
+html.light .bg-surface { background-color: #f0eeec !important; }
+html.light .text-surface { color: #1c1b1b !important; }
+html.light .bg-surface-container-low { background-color: #dcdad8 !important; }
+html.light .bg-surface-container { background-color: #e6e4e2 !important; }
+html.light .bg-surface-container-high { background-color: #f0eeec !important; }
+html.light .bg-surface-container-highest { background-color: #f6f4f3 !important; }
+html.light .bg-surface-container-lowest { background-color: #f8f6f5 !important; }
+html.light .bg-surface-variant { background-color: #d0cecc !important; }
+html.light .border-surface-variant { border-color: #c0bebc !important; }
+html.light .border-outline-variant { border-color: #c0bebc !important; }
+html.light .text-surface-variant { color: #5a5654 !important; }
+html.light .text-primary { color: #b01518 !important; }
+html.light .text-primary-container { color: #d4302a !important; }
+html.light .bg-primary-container { background-color: #f5d0cc !important; }
+html.light .bg-primary { background-color: #b01518 !important; }
+html.light .text-secondary-fixed, html.light .text-secondary-fixed-dim { color: #5b4300 !important; }
+html.light .bg-secondary-container { background-color: #f5e6b0 !important; }
+html.light .text-secondary-container { color: #5b4300 !important; }
+html.light .text-on-secondary-container { color: #3d2e00 !important; }
+html.light .text-on-primary { color: #ffffff !important; }
+html.light .text-on-error { color: #ffffff !important; }
+html.light .bg-error-container { background-color: #fddede !important; }
+html.light .text-error-container { color: #8c0007 !important; }
+html.light .text-outline { color: #757575 !important; }
+html.light .text-inverse-surface { color: #f0eeec !important; }
+html.light .bg-inverse-surface { background-color: #313030 !important; }
+html.light .text-inverse-on-surface { color: #f0eeec !important; }
+html.light .circuit-line { background: linear-gradient(90deg, transparent, rgba(192,0,32,0.3), transparent) !important; }
+html.light .text-primary-fixed { color: #a01a1e !important; }
+html.light .text-primary-fixed-dim { color: #a01a1e !important; }
+html.light .text-tertiary-fixed { color: #49454f !important; }
+html.light .text-tertiary-fixed-dim { color: #625f66 !important; }
+html.light select { background-color: #f8f6f5 !important; color: #1c1b1b !important; }
+html.light input, html.light textarea { background-color: #f8f6f5 !important; color: #1c1b1b !important; }
+`;
+    document.head.appendChild(style);
+}
+function removeLightOverrides() {
+    var s = document.getElementById('light-overrides');
+    if (s) s.remove();
+}
+if (localStorage.getItem('theme') === 'light') {
+    document.addEventListener('DOMContentLoaded', function() {
+        injectLightOverrides();
+    });
+}
 </script>
-{% endif %}
 </body></html>
