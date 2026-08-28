@@ -274,6 +274,14 @@ class PhotoComment(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name="Enviado"
     )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="replies",
+        null=True,
+        blank=True,
+        verbose_name="Comentario padre",
+    )
 
     class Meta:
         ordering = ["created_at"]

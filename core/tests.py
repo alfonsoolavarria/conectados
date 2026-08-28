@@ -344,7 +344,7 @@ class CompetenciasViewTests(TestCase):
         comment.refresh_from_db()
         self.assertEqual(comment.body, "de otro")
 
-    def test_comment_leader_can_edit_others(self):
+    def test_comment_leader_cannot_edit_others(self):
         comment = PhotoComment.objects.create(
             photo=self.photo, user=self.user, body="original"
         )
@@ -353,9 +353,25 @@ class CompetenciasViewTests(TestCase):
             reverse("competencia_comment_edit", args=[comment.id]),
             {"body": "editado por líder"},
         )
+        self.assertEqual(response.status_code, 403)
+        comment.refresh_from_db()
+        self.assertEqual(comment.body, "original")
+
+    def test_comment_superuser_can_edit_others(self):
+        comment = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="original"
+        )
+        admin = User.objects.create_superuser(
+            username="alfonso", password="pass12345"
+        )
+        self.client.force_login(admin)
+        response = self.client.post(
+            reverse("competencia_comment_edit", args=[comment.id]),
+            {"body": "editado por admin"},
+        )
         self.assertEqual(response.status_code, 200)
         comment.refresh_from_db()
-        self.assertEqual(comment.body, "editado por líder")
+        self.assertEqual(comment.body, "editado por admin")
 
     def test_comment_owner_can_delete(self):
         comment = PhotoComment.objects.create(
@@ -401,6 +417,50 @@ class CompetenciasViewTests(TestCase):
             {"body": "y"},
         )
         self.assertEqual(response.status_code, 302)
+
+    def test_comment_reply_creates_nested(self):
+        parent = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="padre"
+        )
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("competencia_comment", args=[self.photo.id]),
+            {"body": "respuesta", "parent": parent.id},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["parent_id"], parent.id)
+        reply = PhotoComment.objects.get(body="respuesta")
+        self.assertEqual(reply.parent_id, parent.id)
+
+    def test_comment_cannot_reply_to_reply(self):
+        top = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="top"
+        )
+        lvl1 = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="nivel1", parent=top
+        )
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("competencia_comment", args=[self.photo.id]),
+            {"body": "no permitido", "parent": lvl1.id},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(PhotoComment.objects.count(), 2)
+
+    def test_comment_parent_must_belong_to_photo(self):
+        other = CompetitionPhoto.objects.create(
+            color="blanco", filename="otra.jpg"
+        )
+        parent = PhotoComment.objects.create(
+            photo=other, user=self.user, body="de otra foto"
+        )
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("competencia_comment", args=[self.photo.id]),
+            {"body": "hack", "parent": parent.id},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(PhotoComment.objects.count(), 1)
 
 
 class ToggleDayTests(TestCase):

@@ -39,8 +39,42 @@ def _es_lider(user):
     return member is not None and member.role == "leader"
 
 
-def _puede_gestionar_comentario(comment, user):
+def _puede_borrar_comentario(comment, user):
     return comment.user_id == user.id or _es_lider(user)
+
+
+def _puede_editar_comentario(comment, user):
+    return comment.user_id == user.id or user.is_superuser
+
+
+def _comment_to_dict(c, user):
+    return {
+        "id": c.pk,
+        "user": c.user.first_name or c.user.username,
+        "user_id": c.user_id,
+        "body": c.body,
+        "created": _fmt_fecha_caracas(c.created_at),
+        "can_edit": _puede_editar_comentario(c, user),
+        "can_delete": _puede_borrar_comentario(c, user),
+        "replies": [],
+    }
+
+
+def _comentarios_anidados(comments, user):
+    todos = {c.pk: _comment_to_dict(c, user) for c in comments}
+    raiz = []
+    for c in comments:
+        d = todos[c.pk]
+        p = c.parent
+        if p is not None:
+            anc = p
+            while anc.parent_id is not None and anc.parent_id in todos:
+                anc = anc.parent
+            if anc.pk in todos:
+                todos[anc.pk]["replies"].append(d)
+                continue
+        raiz.append(d)
+    return raiz
 
 
 def _desafio_activo(challenges):
@@ -676,7 +710,7 @@ def competencias(request):
             color=color, filename=filename
         )
         comments = list(
-            photo.comments.select_related("user").order_by("created_at")
+            photo.comments.select_related("user", "parent").order_by("created_at")
         )
         reactions = photo.reactions.all()
         counts = {key: 0 for key, _ in PhotoReaction.REACTIONS}
@@ -707,17 +741,7 @@ def competencias(request):
                 "counts": counts,
                 "my": my_reaction,
                 "people": reaction_people,
-                "comments": [
-                    {
-                        "id": c.pk,
-                        "user": c.user.first_name or c.user.username,
-                        "user_id": c.user_id,
-                        "body": c.body,
-                        "created": _fmt_fecha_caracas(c.created_at),
-                        "can_manage": _puede_gestionar_comentario(c, request.user),
-                    }
-                    for c in comments
-                ],
+                "comments": _comentarios_anidados(comments, request.user),
             }
         )
 
@@ -793,17 +817,28 @@ def competencia_comment(request, photo_id):
     if len(body) > 200:
         return JsonResponse({"error": "El comentario es demasiado largo"}, status=400)
 
+    parent = None
+    parent_id = request.POST.get("parent") or None
+    if parent_id:
+        parent = PhotoComment.objects.filter(pk=parent_id, photo=photo).first()
+        if parent is None or parent.parent_id is not None:
+            return JsonResponse(
+                {"error": "Solo se permiten respuestas a un nivel"}, status=400
+            )
+
     comment = PhotoComment.objects.create(
-        photo=photo, user=request.user, body=body
+        photo=photo, user=request.user, body=body, parent=parent
     )
     return JsonResponse(
         {
             "id": comment.pk,
+            "parent_id": comment.parent_id,
             "user": request.user.first_name or request.user.username,
             "user_id": request.user.id,
             "body": comment.body,
             "created": _fmt_fecha_caracas(comment.created_at),
-            "can_manage": True,
+            "can_edit": True,
+            "can_delete": True,
             "count": photo.comments.count(),
         }
     )
@@ -815,7 +850,7 @@ def competencia_comment_edit(request, comment_id):
     comment = get_object_or_404(
         PhotoComment.objects.select_related("photo"), pk=comment_id
     )
-    if not _puede_gestionar_comentario(comment, request.user):
+    if not _puede_editar_comentario(comment, request.user):
         return JsonResponse({"error": "No tienes permiso"}, status=403)
 
     body = request.POST.get("body", "").strip()
@@ -841,7 +876,7 @@ def competencia_comment_delete(request, comment_id):
     comment = get_object_or_404(
         PhotoComment.objects.select_related("photo"), pk=comment_id
     )
-    if not _puede_gestionar_comentario(comment, request.user):
+    if not _puede_borrar_comentario(comment, request.user):
         return JsonResponse({"error": "No tienes permiso"}, status=403)
 
     photo_id = comment.photo_id
