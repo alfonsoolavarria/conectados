@@ -670,6 +670,10 @@ def competencias(request):
             (r.reaction for r in reactions if r.user_id == request.user.id),
             None,
         )
+        reaction_people = {}
+        for r in reactions.select_related("user"):
+            name = r.user.first_name or r.user.username
+            reaction_people.setdefault(r.reaction, []).append(name)
         fotos_model.append(
             {
                 "path": foto_path,
@@ -685,6 +689,7 @@ def competencias(request):
                 "id": photo.id,
                 "counts": counts,
                 "my": my_reaction,
+                "people": reaction_people,
                 "comments": [
                     {
                         "user": c.user.first_name or c.user.username,
@@ -738,9 +743,13 @@ def competencia_react(request, photo_id):
             obj.save(update_fields=["reaction"])
 
     counts = {key: 0 for key in valid}
-    for r in PhotoReaction.objects.filter(photo=photo).values("reaction"):
-        counts[r["reaction"]] += 1
-    return JsonResponse({"counts": counts, "active": reaction})
+    people = {key: [] for key in valid}
+    for r in PhotoReaction.objects.filter(photo=photo).select_related("user"):
+        counts[r.reaction] += 1
+        name = r.user.first_name or r.user.username
+        if name not in people[r.reaction]:
+            people[r.reaction].append(name)
+    return JsonResponse({"counts": counts, "people": people, "active": reaction})
 
 
 @login_required

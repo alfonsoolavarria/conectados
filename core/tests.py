@@ -183,6 +183,35 @@ class CompetenciasViewTests(TestCase):
             ).exists()
         )
 
+    def test_react_adds_fire_reaction(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_react", args=[self.photo.id]),
+            {"reaction": "fire"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["counts"]["fire"], 1)
+        self.assertTrue(
+            PhotoReaction.objects.filter(
+                photo=self.photo,
+                user=self.user,
+                reaction="fire",
+            ).exists()
+        )
+
+    def test_react_returns_people(self):
+        PhotoReaction.objects.create(
+            photo=self.photo, user=self.user2, reaction="like"
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_react", args=[self.photo.id]),
+            {"reaction": "like"},
+        )
+        data = response.json()
+        self.assertEqual(len(data["people"]["like"]), 2)
+        self.assertEqual(data["counts"]["like"], 2)
+
     def test_react_toggles_off_when_same(self):
         PhotoReaction.objects.create(
             photo=self.photo, user=self.user, reaction="like"

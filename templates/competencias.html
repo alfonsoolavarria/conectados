@@ -77,6 +77,8 @@
 </button>
 {% endfor %}
 </div>
+<!-- Resumen de quién reaccionó -->
+<div id="modal-reactions-summary" class="px-4 py-2 border-b border-surface-variant/40 flex flex-wrap items-center gap-1.5 min-h-[2rem]"></div>
 <!-- Comentarios -->
 <div id="modal-comments" class="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3 min-h-0">
 </div>
@@ -105,13 +107,14 @@
         cache = JSON.parse(el.textContent) || {};
     } catch (e) { cache = {}; }
     var currentId = null;
+    var EMOJI = { like: "👍", heart: "❤️", cry: "😭", llama: "🦙", fire: "🔥" };
 
     window.openModal = function (btn) {
         currentId = btn.getAttribute("data-photo-id");
         document.getElementById("modal-image").src = btn.getAttribute("data-photo-path");
         document.getElementById("comment-photo-id").value = currentId;
         document.getElementById("comment-input").value = "";
-        var data = cache[currentId] || { counts: {}, my: null, comments: [] };
+        var data = cache[currentId] || { counts: {}, my: null, comments: [], people: {} };
         renderPhoto(data);
         var modal = document.getElementById("photo-modal");
         modal.classList.remove("hidden");
@@ -158,6 +161,36 @@
             empty.className = "font-label-sm text-label-sm text-on-surface-variant/60 text-center py-4";
             empty.textContent = "Sé el primero en comentar.";
             wrap.appendChild(empty);
+        }
+        renderReactionsSummary(data);
+    }
+
+    function renderReactionsSummary(data) {
+        var box = document.getElementById("modal-reactions-summary");
+        box.innerHTML = "";
+        var people = data.people || {};
+        var counts = data.counts || {};
+        var any = false;
+        Object.keys(EMOJI).forEach(function (k) {
+            var list = people[k] || [];
+            var c = counts[k] || 0;
+            if (!c || list.length === 0) return;
+            any = true;
+            var chip = document.createElement("span");
+            chip.className = "inline-flex items-center gap-1 bg-surface-container-high border border-surface-variant rounded-full px-2 py-0.5 font-label-sm text-label-sm text-on-surface-variant";
+            var vis = list.slice(0, 2).join(", ");
+            var extra = c - list.length;
+            chip.textContent = EMOJI[k] + " " + vis;
+            if (extra > 0) {
+                var rest = document.createElement("span");
+                rest.textContent = " y " + extra + " más";
+                rest.className = "text-on-surface-variant/60";
+                chip.appendChild(rest);
+            }
+            box.appendChild(chip);
+        });
+        if (!any) {
+            box.innerHTML = '<span class="font-label-sm text-label-sm text-on-surface-variant/50">Aún no hay reacciones</span>';
         }
     }
 
@@ -209,6 +242,7 @@
             cache[currentId] = cache[currentId] || {};
             cache[currentId].counts = data.counts;
             cache[currentId].my = data.active;
+            cache[currentId].people = data.people;
             var btns = document.querySelectorAll("#photo-modal .reaction-btn");
             btns.forEach(function (b) {
                 var k = b.getAttribute("data-reaction");
@@ -216,6 +250,7 @@
                 b.classList.toggle("is-active", !!data.active && data.active === k);
                 b.querySelector(".reaction-count").textContent = c || "";
             });
+            renderReactionsSummary(cache[currentId]);
             updateThumb(currentId, reactionTotal(data.counts));
         });
     };
@@ -238,7 +273,7 @@
             var empty = wrap.querySelector("p.text-center");
             if (empty) empty.remove();
             wrap.appendChild(commentEl(data));
-            cache[photoId] = cache[photoId] || { counts: {}, my: null, comments: [] };
+            cache[photoId] = cache[photoId] || { counts: {}, my: null, comments: [], people: {} };
             cache[photoId].comments.push(data);
             updateThumb(photoId, undefined, data.count);
             input.value = "";

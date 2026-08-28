@@ -290,6 +290,7 @@ class PhotoReaction(models.Model):
         ("heart", "❤️"),
         ("cry", "😭"),
         ("llama", "🦙"),
+        ("fire", "🔥"),
     ]
 
     photo = models.ForeignKey(
