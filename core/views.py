@@ -13,6 +13,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import LoginForm
@@ -220,6 +221,9 @@ def toggle_day(request):
     )
     compromiso.is_completed = not compromiso.is_completed
     compromiso.save()
+    redir = request.POST.get("next", "")
+    if url_has_allowed_host_and_scheme(redir, allowed_hosts={request.get_host()}):
+        return HttpResponseRedirect(redir)
     return HttpResponseRedirect(reverse("home"))
 
 
@@ -737,10 +741,15 @@ def competencia_react(request, photo_id):
     if not created:
         if obj.reaction == reaction:
             obj.delete()
-            created = False
         else:
             obj.reaction = reaction
             obj.save(update_fields=["reaction"])
+
+    active = (
+        PhotoReaction.objects.filter(
+            photo=photo, user=request.user
+        ).values_list("reaction", flat=True).first()
+    )
 
     counts = {key: 0 for key in valid}
     people = {key: [] for key in valid}
@@ -749,7 +758,11 @@ def competencia_react(request, photo_id):
         name = r.user.first_name or r.user.username
         if name not in people[r.reaction]:
             people[r.reaction].append(name)
-    return JsonResponse({"counts": counts, "people": people, "active": reaction})
+    return JsonResponse({
+        "counts": counts,
+        "people": people,
+        "active": active,
+    })
 
 
 @login_required

@@ -104,7 +104,8 @@
     var cache = {};
     try {
         var el = document.getElementById("photo-data");
-        cache = JSON.parse(el.textContent) || {};
+        var list = JSON.parse(el.textContent) || [];
+        (list || []).forEach(function (p) { cache[p.id] = p; });
     } catch (e) { cache = {}; }
     var currentId = null;
     var EMOJI = { like: "👍", heart: "❤️", cry: "😭", llama: "🦙", fire: "🔥" };

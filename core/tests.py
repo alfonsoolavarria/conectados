@@ -5,6 +5,7 @@ from django.urls import reverse
 from .models import (
     Cabin,
     CompetitionPhoto,
+    DailyCommitment,
     Member,
     Message,
     PhotoComment,
@@ -223,6 +224,7 @@ class CompetenciasViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["counts"]["like"], 0)
+        self.assertIsNone(response.json()["active"])
         self.assertFalse(
             PhotoReaction.objects.filter(photo=self.photo, user=self.user).exists()
         )
@@ -239,6 +241,7 @@ class CompetenciasViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["counts"]["like"], 0)
         self.assertEqual(response.json()["counts"]["llama"], 1)
+        self.assertEqual(response.json()["active"], "llama")
 
     def test_react_rejects_invalid(self):
         self.client.force_login(self.user)
@@ -288,3 +291,40 @@ class CompetenciasViewTests(TestCase):
             {"body": "x" * 200},
         )
         self.assertEqual(response.status_code, 200)
+
+
+class ToggleDayTests(TestCase):
+    def setUp(self):
+        self.user = _make_camper("campert", 3)
+
+    def test_redirects_back_to_next_page(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("toggle_day"),
+            {"day": "2026-08-01", "next": "/mis-desafios/"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/mis-desafios/")
+        self.assertTrue(
+            DailyCommitment.objects.filter(
+                user=self.user, date="2026-08-01", is_completed=True
+            ).exists()
+        )
+
+    def test_ignores_external_next(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("toggle_day"),
+            {"day": "2026-08-01", "next": "https://evil.com"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertNotEqual(response.url, "https://evil.com")
+
+    def test_falls_back_to_home_without_next(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("toggle_day"),
+            {"day": "2026-08-01"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("home"))
