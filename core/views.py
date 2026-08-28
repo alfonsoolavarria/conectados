@@ -221,6 +221,22 @@ def _dashboard_lideres(request):
                     "is_leader": m.role == "leader",
                 }
             )
+            participantes = [m for m in miembros_con_progreso if not m["is_leader"]]
+            total_campers_cab = len(participantes)
+            participaron = sum(1 for m in participantes if m["completed"] > 0)
+            pct_participacion = (
+                round(participaron / total_campers_cab * 100)
+                if total_campers_cab
+                else 0
+            )
+            if participantes:
+                pct_progreso = round(
+                    sum(min(m["completed"] / m["total"], 1) for m in participantes)
+                    / total_campers_cab
+                    * 100
+                )
+            else:
+                pct_progreso = 0
         cabanas_data.append(
             {
                 "cabin": cab,
@@ -229,6 +245,12 @@ def _dashboard_lideres(request):
                 "num_days": total_days,
                 "challenge": active_ch,
                 "es_mia": member.cabin_id == cab.pk,
+                "participacion": {
+                    "participaron": participaron,
+                    "total": total_campers_cab,
+                    "pct": pct_participacion,
+                    "progreso": pct_progreso,
+                },
             }
         )
     cabinas_masc = [c for c in cabanas_data if c["cabin"].gender == "M"]

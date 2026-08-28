@@ -90,7 +90,45 @@
             Mi cabaña (Cabaña {{ request.user.member.cabin.number }})
         </label>
 </div>
+<div class="flex items-center gap-2">
+<span class="w-px h-6 bg-surface-variant"></span>
+<button type="button" onclick="toggleParticipation()" id="participation-toggle" class="inline-flex items-center gap-2 bg-surface-container border border-outline-variant rounded-full px-4 py-2 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest transition-colors duration-300 hover:border-secondary-container/60 hover:text-secondary-container active:scale-95" aria-expanded="false">
+<span class="material-symbols-outlined text-[16px] text-secondary-container">monitoring</span>
+            Progreso por cabaña
+        </button>
 </div>
+</div>
+</section>
+<!-- Panel de participación por cabaña -->
+<section id="participation-panel" class="hidden no-print flex flex-col gap-4">
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">monitoring</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Progreso de participación por cabaña</h3>
+</div>
+<button type="button" onclick="toggleParticipation()" class="w-9 h-9 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center hover:border-secondary-container/60 hover:text-secondary-container active:scale-95 transition-all duration-200" title="Cerrar">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+{% for cab in cabins %}
+{% if cab.participacion.total %}
+<div class="bg-surface-container border border-surface-variant rounded-xl p-5">
+<div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+<div class="flex items-center gap-3">
+<span class="w-10 h-10 rounded-xl border flex items-center justify-center font-display-lg text-display-lg {% if cab.cabin.gender == "F" %}bg-secondary-container/15 border-secondary-container/40 text-secondary-container{% else %}bg-primary-container/15 border-primary-container/40 text-primary-container{% endif %}">{{ cab.cabin.number }}</span>
+<div class="flex flex-col">
+<h4 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Cabaña {{ cab.cabin.number }} · {{ cab.cabin.get_gender_display_es }}</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">{{ cab.participacion.participaron }} de {{ cab.participacion.total }} participaron · {{ cab.participacion.progreso }}% promedio</p>
+</div>
+</div>
+<span class="font-display-lg text-display-lg {% if cab.participacion.pct >= 80 %}text-secondary-container{% elif cab.participacion.pct >= 40 %}text-primary-container{% else %}text-on-surface-variant{% endif %}">{{ cab.participacion.pct }}%</span>
+</div>
+<div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary-container to-secondary-container rounded-full transition-all duration-500" style="width: {{ cab.participacion.pct }}%;"></div>
+</div>
+</div>
+{% endif %}
+{% endfor %}
 </section>
 <!-- Cabañas: dos columnas por género -->
 <section class="flex flex-col gap-8">
@@ -151,6 +189,14 @@ function toggleMyChallenges() {
     panel.classList.toggle("hidden");
     chevron.classList.toggle("rotate-180");
     chevron.classList.toggle("rotate-0");
+}
+function toggleParticipation() {
+    const panel = document.getElementById("participation-panel");
+    const toggle = document.getElementById("participation-toggle");
+    if (panel) {
+        const hidden = panel.classList.toggle("hidden");
+        if (toggle) toggle.setAttribute("aria-expanded", String(!hidden));
+    }
 }
 function uncheckMineRadio() {
     document.querySelector('input[name="cabin-filter"][value="mine"]').checked = false;

@@ -52,6 +52,19 @@
         </a>
 </div>
 </div>
+{% elif cab.challenge %}
+<div class="mt-4 pt-4 border-t border-surface-variant">
+<div class="flex items-start gap-2 min-w-0">
+<span class="material-symbols-outlined text-secondary-container shrink-0">flag</span>
+<div class="min-w-0">
+<p class="font-label-sm text-label-sm text-secondary-container uppercase tracking-widest">Desafío en curso</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">{{ cab.challenge.body }}</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">{{ cab.challenge.fecha_inicio|date:"d M" }} – {{ cab.challenge.fecha_fin|date:"d M" }} · {{ cab.challenge.get_duration_days_display }}</span>
+</div>
+</div>
+</div>
+</div>
 {% endif %}
 <div class="campers-panel">
 {% if cab.campers %}

@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from .models import (
     Cabin,
+    Challenge,
     CompetitionPhoto,
     DailyCommitment,
     Member,
@@ -134,6 +135,68 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Mi Espacio")
+
+    def test_leader_sees_other_cabin_challenge_read_only(self):
+        other_cabin = Cabin.objects.create(
+            number=99, gender="M", age_range="12-15", location="Otra"
+        )
+        leader_user = User.objects.create_user(
+            username="lider1", password="pass12345"
+        )
+        Member.objects.create(
+            user=leader_user,
+            full_name="Líder Uno",
+            role="leader",
+            cabin=self.cabin,
+            gender="M",
+        )
+        Challenge.objects.create(
+            cabin=other_cabin,
+            body="Desafío secreto de otra cabaña",
+            duration_days=10,
+            created_by=leader_user,
+        )
+        self.client.force_login(leader_user)
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Desafío secreto de otra cabaña")
+        self.assertContains(response, "Desafío en curso")
+        self.assertNotContains(
+            response,
+            'href="' + reverse("challenge", args=[other_cabin.pk]) + '"',
+        )
+
+    def test_leader_sees_participation_progress_panel(self):
+        leader_user = User.objects.create_user(
+            username="lider2", password="pass12345"
+        )
+        Member.objects.create(
+            user=leader_user,
+            full_name="Líder Dos",
+            role="leader",
+            cabin=self.cabin,
+            gender="M",
+        )
+        camper2 = User.objects.create_user(
+            username="camperx", password="pass12345"
+        )
+        Member.objects.create(
+            user=camper2,
+            full_name="Acampante X",
+            role="camper",
+            cabin=self.cabin,
+            gender="M",
+        )
+        DailyCommitment.objects.create(
+            user=camper2, date=timezone.localdate(), is_completed=True
+        )
+        self.client.force_login(leader_user)
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Progreso por cabaña")
+        self.assertContains(response, "id=\"participation-panel\"")
+        self.assertContains(response, "Progreso de participación por cabaña")
+        self.assertContains(response, "participaron")
 
 
 def _make_camper(username, cabin_number):
