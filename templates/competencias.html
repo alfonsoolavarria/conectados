@@ -54,14 +54,14 @@
 </section>
 
 <!-- Modal (estilo Facebook) -->
-<div id="photo-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm items-center justify-center p-4">
-<div class="bg-surface-container max-w-3xl w-full max-h-[90vh] rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-[0_0_60px_rgba(0,0,0,0.6)]">
-<!-- Imagen -->
-<div class="md:w-1/2 flex items-center justify-center bg-black">
-<img id="modal-image" src="" alt="Foto de competencia" class="w-full h-56 md:h-full md:min-h-[320px] object-contain"/>
+<div id="photo-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm items-center justify-center p-3 sm:p-4">
+<div class="bg-surface-container max-w-5xl w-full max-h-[92vh] rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-[0_0_60px_rgba(0,0,0,0.6)]">
+<!-- Imagen (más ancha, mantiene aspect ratio) -->
+<div class="md:w-[60%] h-64 sm:h-80 md:h-[85vh] flex items-center justify-center bg-black relative">
+<img id="modal-image" src="" alt="Foto de competencia" class="w-full h-full object-contain"/>
 </div>
 <!-- Panel de interacción -->
-<div class="md:w-1/2 flex flex-col min-h-0">
+<div class="md:w-[40%] flex flex-col min-h-0 md:h-[85vh]">
 <div class="flex items-center justify-between px-4 py-3 border-b border-surface-variant/40">
 <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Foto de competencia</span>
 <button type="button" onclick="closeModal()" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">
@@ -78,10 +78,17 @@
 {% endfor %}
 </div>
 <!-- Resumen de quién reaccionó -->
-<div id="modal-reactions-summary" class="px-4 py-2 border-b border-surface-variant/40 flex flex-wrap items-center gap-1.5 min-h-[2rem]"></div>
-<!-- Comentarios -->
-<div id="modal-comments" class="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3 min-h-0">
+<div class="px-4 py-2 border-b border-surface-variant/40 flex flex-wrap items-center gap-2">
+<button type="button" id="reactions-title" onclick="openReactionsPopup()" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest hover:text-secondary-container transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">favorite</span>
+                Reacciones
+            </button>
+<div id="modal-reactions-summary" class="flex flex-wrap items-center gap-1.5 min-h-[1.5rem] flex-1"></div>
 </div>
+<!-- Comentarios -->
+<div id="modal-comments" class="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3 min-h-0"></div>
+<!-- Cargar más comentarios -->
+<button type="button" id="load-more-comments" onclick="loadMoreComments()" class="hidden mx-4 mb-2 font-label-sm text-label-sm text-secondary-container hover:bg-secondary-container/10 rounded-full py-1.5 transition-colors">Cargar más comentarios</button>
 <!-- Formulario de comentario -->
 <div class="border-t border-surface-variant/40 px-4 py-3">
 <form id="comment-form" onsubmit="return postComment(event)">
@@ -98,6 +105,19 @@
 </div>
 </div>
 
+<!-- Popup de reacciones -->
+<div id="reactions-popup" class="hidden fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm items-center justify-center p-4">
+<div class="bg-surface-container max-w-md w-full rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.6)] flex flex-col max-h-[75vh]">
+<div class="flex items-center justify-between px-5 py-4 border-b border-surface-variant/40">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Reacciones</h3>
+<button type="button" onclick="closeReactionsPopup()" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div id="reactions-popup-list" class="flex-1 overflow-y-auto px-2 py-2 flex flex-col"></div>
+</div>
+</div>
+
 {{ photo_cache|json_script:"photo-data" }}
 <script>
 (function () {
@@ -109,12 +129,15 @@
     } catch (e) { cache = {}; }
     var currentId = null;
     var EMOJI = { like: "👍", heart: "❤️", cry: "😭", llama: "🦙", fire: "🔥" };
+    var COMMENT_PAGE = 20;
+    var commentLimit = COMMENT_PAGE;
 
     window.openModal = function (btn) {
         currentId = btn.getAttribute("data-photo-id");
         document.getElementById("modal-image").src = btn.getAttribute("data-photo-path");
         document.getElementById("comment-photo-id").value = currentId;
         document.getElementById("comment-input").value = "";
+        commentLimit = COMMENT_PAGE;
         var data = cache[currentId] || { counts: {}, my: null, comments: [], people: {} };
         renderPhoto(data);
         var modal = document.getElementById("photo-modal");
@@ -154,17 +177,31 @@
         });
         var wrap = document.getElementById("modal-comments");
         wrap.innerHTML = "";
-        (data.comments || []).forEach(function (c) {
+        var all = data.comments || [];
+        var visible = all.slice(0, commentLimit);
+        visible.forEach(function (c) {
             wrap.appendChild(commentEl(c));
         });
-        if (!data.comments || data.comments.length === 0) {
+        if (all.length === 0) {
             var empty = document.createElement("p");
             empty.className = "font-label-sm text-label-sm text-on-surface-variant/60 text-center py-4";
             empty.textContent = "Sé el primero en comentar.";
             wrap.appendChild(empty);
         }
+        var moreBtn = document.getElementById("load-more-comments");
+        if (visible.length < all.length) {
+            moreBtn.classList.remove("hidden");
+            moreBtn.textContent = "Cargar más comentarios (" + (all.length - visible.length) + ")";
+        } else {
+            moreBtn.classList.add("hidden");
+        }
         renderReactionsSummary(data);
     }
+
+    window.loadMoreComments = function () {
+        commentLimit += COMMENT_PAGE;
+        renderPhoto(cache[currentId] || { counts: {}, my: null, comments: [], people: {} });
+    };
 
     function renderReactionsSummary(data) {
         var box = document.getElementById("modal-reactions-summary");
@@ -191,13 +228,66 @@
             box.appendChild(chip);
         });
         if (!any) {
-            box.innerHTML = '<span class="font-label-sm text-label-sm text-on-surface-variant/50">Aún no hay reacciones</span>';
+            box.innerHTML = '<span class="font-label-sm text-label-sm text-on-surface-variant/50">Sin reacciones aún</span>';
         }
     }
+
+    function totalReactions(data) {
+        var t = 0;
+        var counts = data.counts || {};
+        for (var k in counts) t += counts[k] || 0;
+        return t;
+    }
+
+    window.openReactionsPopup = function () {
+        var data = cache[currentId] || { counts: {}, my: null, comments: [], people: {} };
+        if (totalReactions(data) === 0) {
+            closeReactionsPopup();
+            return;
+        }
+        var list = document.getElementById("reactions-popup-list");
+        list.innerHTML = "";
+        var people = data.people || {};
+        Object.keys(EMOJI).forEach(function (k) {
+            var names = people[k] || [];
+            names.forEach(function (name) {
+                var el = document.createElement("div");
+                el.className = "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-container-low";
+                var badge = document.createElement("span");
+                badge.className = "w-9 h-9 rounded-full bg-surface-container-high border border-surface-variant flex items-center justify-center font-label-sm text-label-sm text-on-surface-variant shrink-0";
+                badge.textContent = escapeHtml((name || "?").charAt(0).toUpperCase());
+                var nm = document.createElement("span");
+                nm.className = "font-body-md text-body-md text-on-surface flex-1 min-w-0 truncate";
+                nm.textContent = escapeHtml(name);
+                var em = document.createElement("span");
+                em.className = "text-2xl shrink-0";
+                em.textContent = (EMOJI[k] || "👍");
+                el.appendChild(badge); el.appendChild(nm); el.appendChild(em);
+                list.appendChild(el);
+            });
+        });
+        var pop = document.getElementById("reactions-popup");
+        pop.classList.remove("hidden");
+        pop.classList.add("flex");
+    };
+
+    window.closeReactionsPopup = function () {
+        var pop = document.getElementById("reactions-popup");
+        pop.classList.add("hidden");
+        pop.classList.remove("flex");
+    };
+
+    document.getElementById("reactions-popup").addEventListener("click", function (e) {
+        if (e.target === this) closeReactionsPopup();
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { closeReactionsPopup(); closeModal(); }
+    });
 
     function commentEl(c) {
         var el = document.createElement("div");
         el.className = "flex flex-col gap-0.5";
+        el.dataset.commentId = c.id;
         var header = document.createElement("div");
         header.className = "flex items-center gap-2";
         var badge = document.createElement("span");
@@ -214,6 +304,26 @@
         body.className = "font-body-md text-body-md text-on-surface break-words";
         body.textContent = c.body;
         el.appendChild(header); el.appendChild(body);
+        if (c.can_manage) {
+            var actions = document.createElement("div");
+            actions.className = "flex items-center gap-3 pt-0.5";
+            var editBtn = document.createElement("button");
+            editBtn.type = "button";
+            editBtn.className = "font-label-sm text-label-sm text-primary";
+            editBtn.textContent = "Editar";
+            editBtn.onclick = (function (cid, text) {
+                return function () { startEditComment(cid, text); };
+            })(c.id, c.body);
+            var delBtn = document.createElement("button");
+            delBtn.type = "button";
+            delBtn.className = "font-label-sm text-label-sm text-error";
+            delBtn.textContent = "Eliminar";
+            delBtn.onclick = (function (cid) {
+                return function () { deleteComment(cid); };
+            })(c.id);
+            actions.appendChild(editBtn); actions.appendChild(delBtn);
+            el.appendChild(actions);
+        }
         return el;
     }
 
@@ -229,6 +339,78 @@
         for (var k in counts) t += counts[k] || 0;
         return t;
     }
+
+    function findComment(cid) {
+        var list = (cache[currentId] || {}).comments || [];
+        for (var i = 0; i < list.length; i++) {
+            if (String(list[i].id) === String(cid)) return list[i];
+        }
+        return null;
+    }
+
+    function repaintComments() {
+        renderPhoto(cache[currentId] || { counts: {}, my: null, comments: [], people: {} });
+    }
+
+    window.startEditComment = function (cid, currentText) {
+        var el = document.querySelector('#modal-comments [data-comment-id="' + cid + '"]');
+        if (!el) return;
+        el.innerHTML = "";
+        var textarea = document.createElement("textarea");
+        textarea.value = currentText || "";
+        textarea.maxLength = 200;
+        textarea.className = "w-full rounded-lg bg-surface-container-high border border-surface-variant p-2 font-body-md text-body-md text-on-surface resize-none";
+        el.appendChild(textarea);
+        var row = document.createElement("div");
+        row.className = "flex items-center gap-3 pt-1";
+        var save = document.createElement("button");
+        save.type = "button"; save.className = "font-label-sm text-label-sm text-primary"; save.textContent = "Guardar";
+        save.onclick = function () { saveEditComment(cid, textarea.value); };
+        var cancel = document.createElement("button");
+        cancel.type = "button"; cancel.className = "font-label-sm text-label-sm text-on-surface-variant/70"; cancel.textContent = "Cancelar";
+        cancel.onclick = function () { cancelEditComment(cid); };
+        row.appendChild(save); row.appendChild(cancel);
+        el.appendChild(row);
+        textarea.focus();
+    };
+
+    window.cancelEditComment = function (cid) {
+        repaintComments();
+    };
+
+    window.saveEditComment = function (cid, newBody) {
+        var body = (newBody || "").trim();
+        if (!body) { alert("El comentario no puede estar vacío"); return; }
+        var fd = new FormData();
+        fd.append("body", body);
+        fetch("{% url 'competencia_comment_edit' 0 %}".replace("0", cid), {
+            method: "POST", headers: { "X-CSRFToken": csrf() }, body: fd
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.error) { alert(data.error); return; }
+            var comment = findComment(cid);
+            if (comment) comment.body = data.body;
+            repaintComments();
+        });
+    };
+
+    window.deleteComment = function (cid) {
+        if (!confirm("¿Seguro que quieres eliminar este comentario?")) return;
+        var fd = new FormData();
+        fetch("{% url 'competencia_comment_delete' 0 %}".replace("0", cid), {
+            method: "POST", headers: { "X-CSRFToken": csrf() }, body: fd
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.error) { alert(data.error); return; }
+            cache[currentId].comments = cache[currentId].comments.filter(function (x) {
+                return String(x.id) !== String(cid);
+            });
+            repaintComments();
+            updateThumb(currentId, undefined, data.count);
+        });
+    };
 
     window.react = function (key) {
         if (!currentId) return;
@@ -270,12 +452,9 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.error) { alert(data.error); return; }
-            var wrap = document.getElementById("modal-comments");
-            var empty = wrap.querySelector("p.text-center");
-            if (empty) empty.remove();
-            wrap.appendChild(commentEl(data));
             cache[photoId] = cache[photoId] || { counts: {}, my: null, comments: [], people: {} };
             cache[photoId].comments.push(data);
+            renderPhoto(cache[photoId]);
             updateThumb(photoId, undefined, data.count);
             input.value = "";
         });

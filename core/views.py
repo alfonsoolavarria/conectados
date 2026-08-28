@@ -30,6 +30,19 @@ from .models import (
 User = get_user_model()
 
 
+def _fmt_fecha_caracas(dt):
+    return timezone.localtime(dt).strftime("%d/%m %H:%M")
+
+
+def _es_lider(user):
+    member = getattr(user, "member", None)
+    return member is not None and member.role == "leader"
+
+
+def _puede_gestionar_comentario(comment, user):
+    return comment.user_id == user.id or _es_lider(user)
+
+
 def _desafio_activo(challenges):
     for ch in challenges:
         if ch.is_active:
@@ -696,9 +709,12 @@ def competencias(request):
                 "people": reaction_people,
                 "comments": [
                     {
+                        "id": c.pk,
                         "user": c.user.first_name or c.user.username,
+                        "user_id": c.user_id,
                         "body": c.body,
-                        "created": c.created_at.strftime("%d/%m %H:%M"),
+                        "created": _fmt_fecha_caracas(c.created_at),
+                        "can_manage": _puede_gestionar_comentario(c, request.user),
                     }
                     for c in comments
                 ],
@@ -720,6 +736,8 @@ def competencias(request):
             "fotos": fotos_model,
             "REACTIONS": PhotoReaction.REACTIONS,
             "photo_cache": photo_cache,
+            "es_lider": _es_lider(request.user),
+            "current_user_id": request.user.id,
         },
     )
 
@@ -782,8 +800,51 @@ def competencia_comment(request, photo_id):
         {
             "id": comment.pk,
             "user": request.user.first_name or request.user.username,
+            "user_id": request.user.id,
             "body": comment.body,
-            "created": comment.created_at.strftime("%d/%m %H:%M"),
+            "created": _fmt_fecha_caracas(comment.created_at),
+            "can_manage": True,
             "count": photo.comments.count(),
         }
     )
+
+
+@login_required
+@require_POST
+def competencia_comment_edit(request, comment_id):
+    comment = get_object_or_404(
+        PhotoComment.objects.select_related("photo"), pk=comment_id
+    )
+    if not _puede_gestionar_comentario(comment, request.user):
+        return JsonResponse({"error": "No tienes permiso"}, status=403)
+
+    body = request.POST.get("body", "").strip()
+    if not body:
+        return JsonResponse({"error": "El comentario no puede estar vacío"}, status=400)
+    if len(body) > 200:
+        return JsonResponse({"error": "El comentario es demasiado largo"}, status=400)
+
+    comment.body = body
+    comment.save(update_fields=["body"])
+    return JsonResponse(
+        {
+            "id": comment.pk,
+            "body": comment.body,
+            "count": comment.photo.comments.count(),
+        }
+    )
+
+
+@login_required
+@require_POST
+def competencia_comment_delete(request, comment_id):
+    comment = get_object_or_404(
+        PhotoComment.objects.select_related("photo"), pk=comment_id
+    )
+    if not _puede_gestionar_comentario(comment, request.user):
+        return JsonResponse({"error": "No tienes permiso"}, status=403)
+
+    photo_id = comment.photo_id
+    count_after = comment.photo.comments.count() - 1
+    comment.delete()
+    return JsonResponse({"id": comment_id, "count": max(count_after, 0)})

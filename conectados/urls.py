@@ -22,5 +22,7 @@ urlpatterns = [
     path('competencias/', views.competencias, name='competencias'),
     path('competencias/react/<int:photo_id>/', views.competencia_react, name='competencia_react'),
     path('competencias/comment/<int:photo_id>/', views.competencia_comment, name='competencia_comment'),
+    path('competencias/comment/edit/<int:comment_id>/', views.competencia_comment_edit, name='competencia_comment_edit'),
+    path('competencias/comment/delete/<int:comment_id>/', views.competencia_comment_delete, name='competencia_comment_delete'),
     path('', views.home, name='home'),
 ]

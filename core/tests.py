@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import (
     Cabin,
@@ -154,6 +155,19 @@ class CompetenciasViewTests(TestCase):
     def setUp(self):
         self.user = _make_camper("camperx", 1)
         self.user2 = _make_camper("campery", 2)
+        self.leader_cabin = Cabin.objects.create(
+            number=5, gender="M", age_range="12-15", location="Principal"
+        )
+        self.leader_user = User.objects.create_user(
+            username="liderz", password="pass12345"
+        )
+        Member.objects.create(
+            user=self.leader_user,
+            full_name="Líder Z",
+            role="leader",
+            cabin=self.leader_cabin,
+            gender="M",
+        )
         self.photo = CompetitionPhoto.objects.create(
             color="blanco", filename="uno.jpg"
         )
@@ -291,6 +305,102 @@ class CompetenciasViewTests(TestCase):
             {"body": "x" * 200},
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_comment_created_time_is_caracas(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment", args=[self.photo.id]),
+            {"body": "Hora local"},
+        )
+        comment = PhotoComment.objects.get()
+        expected = timezone.localtime(comment.created_at).strftime("%d/%m %H:%M")
+        self.assertEqual(response.json()["created"], expected)
+        utc_naive = comment.created_at.strftime("%d/%m %H:%M")
+        self.assertNotEqual(response.json()["created"], utc_naive)
+
+    def test_comment_owner_can_edit(self):
+        comment = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="original"
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment_edit", args=[comment.id]),
+            {"body": "editado"},
+        )
+        self.assertEqual(response.status_code, 200)
+        comment.refresh_from_db()
+        self.assertEqual(comment.body, "editado")
+
+    def test_comment_camper_cannot_edit_others(self):
+        comment = PhotoComment.objects.create(
+            photo=self.photo, user=self.user2, body="de otro"
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment_edit", args=[comment.id]),
+            {"body": "hack"},
+        )
+        self.assertEqual(response.status_code, 403)
+        comment.refresh_from_db()
+        self.assertEqual(comment.body, "de otro")
+
+    def test_comment_leader_can_edit_others(self):
+        comment = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="original"
+        )
+        self.client.force_login(self.leader_user)
+        response = self.client.post(
+            reverse("competencia_comment_edit", args=[comment.id]),
+            {"body": "editado por líder"},
+        )
+        self.assertEqual(response.status_code, 200)
+        comment.refresh_from_db()
+        self.assertEqual(comment.body, "editado por líder")
+
+    def test_comment_owner_can_delete(self):
+        comment = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="borrar"
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment_delete", args=[comment.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(
+            PhotoComment.objects.filter(pk=comment.pk).exists()
+        )
+
+    def test_comment_camper_cannot_delete_others(self):
+        comment = PhotoComment.objects.create(
+            photo=self.photo, user=self.user2, body="de otro"
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment_delete", args=[comment.id])
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(PhotoComment.objects.filter(pk=comment.pk).exists())
+
+    def test_comment_leader_can_delete_others(self):
+        comment = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="borrar"
+        )
+        self.client.force_login(self.leader_user)
+        response = self.client.post(
+            reverse("competencia_comment_delete", args=[comment.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(PhotoComment.objects.filter(pk=comment.pk).exists())
+
+    def test_comment_edit_requires_login(self):
+        comment = PhotoComment.objects.create(
+            photo=self.photo, user=self.user, body="x"
+        )
+        response = self.client.post(
+            reverse("competencia_comment_edit", args=[comment.id]),
+            {"body": "y"},
+        )
+        self.assertEqual(response.status_code, 302)
 
 
 class ToggleDayTests(TestCase):
