@@ -9,14 +9,22 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.db.models import Count, Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import LoginForm
-from .models import Cabin, Challenge, DailyCommitment, Message
+from .models import (
+    Cabin,
+    Challenge,
+    CompetitionPhoto,
+    DailyCommitment,
+    Message,
+    PhotoComment,
+    PhotoReaction,
+)
 
 User = get_user_model()
 
@@ -489,6 +497,7 @@ def qr_lideres(request):
     member = getattr(request.user, "member", None)
     if member is None or member.role != "leader":
         return HttpResponseRedirect(reverse("home"))
+    es_admin = request.user.is_superuser or request.user.is_staff
     site_url = os.getenv("SITE_URL", request.build_absolute_uri("/")).rstrip("/")
     cabinas = []
     for cab in Cabin.objects.prefetch_related("members").all():
@@ -497,12 +506,11 @@ def qr_lideres(request):
             user__isnull=True
         ).select_related("user"):
             url = f"{site_url}/login/?username={m.user.username}"
-            qr = segno.make(url, error="m")
             lideres.append(
                 {
                     "member": m,
                     "username": m.user.username,
-                    "qr": qr.svg_data_uri(scale=4, border=1),
+                    "qr": segno.make(url, error="m").svg_data_uri(scale=4, border=1) if es_admin else None,
                     "url": url,
                 }
             )
@@ -511,12 +519,11 @@ def qr_lideres(request):
             user__isnull=True
         ).select_related("user"):
             url = f"{site_url}/login/?username={m.user.username}"
-            qr = segno.make(url, error="m")
             acampantes.append(
                 {
                     "member": m,
                     "username": m.user.username,
-                    "qr": qr.svg_data_uri(scale=4, border=1),
+                    "qr": segno.make(url, error="m").svg_data_uri(scale=4, border=1) if es_admin else None,
                     "url": url,
                 }
             )
@@ -526,7 +533,14 @@ def qr_lideres(request):
                 "leaders": lideres,
                 "campers": acampantes,
             })
-    return render(request, "qr_print.html", {"cabinas": cabinas})
+    return render(
+        request,
+        "qr_print.html",
+        {
+            "cabinas": cabinas,
+            "es_admin": es_admin,
+        },
+    )
 
 
 @login_required
@@ -619,6 +633,8 @@ def competencias(request):
         return HttpResponseRedirect(reverse("home"))
 
     color_filter = request.GET.get("color", "blanco")
+    if color_filter not in {c["id"] for c in COLORES_COMPETENCIA}:
+        color_filter = "blanco"
     competencia_dir = settings.BASE_DIR / "static" / "competencia"
 
     fotos_por_color = {}
@@ -635,6 +651,51 @@ def competencias(request):
 
     fotos_actuales = fotos_por_color.get(color_filter, [])
 
+    fotos_model = []
+    photo_cache = []
+    for foto_path in fotos_actuales:
+        color, filename = foto_path.split("/", 1)
+        photo, _ = CompetitionPhoto.objects.get_or_create(
+            color=color, filename=filename
+        )
+        comments = list(
+            photo.comments.select_related("user").order_by("created_at")
+        )
+        reactions = photo.reactions.all()
+        counts = {key: 0 for key, _ in PhotoReaction.REACTIONS}
+        for r in reactions:
+            if r.reaction in counts:
+                counts[r.reaction] += 1
+        my_reaction = next(
+            (r.reaction for r in reactions if r.user_id == request.user.id),
+            None,
+        )
+        fotos_model.append(
+            {
+                "path": foto_path,
+                "photo": photo,
+                "comments": comments,
+                "comment_count": len(comments),
+                "reactions": reactions,
+                "my_reaction": my_reaction,
+            }
+        )
+        photo_cache.append(
+            {
+                "id": photo.id,
+                "counts": counts,
+                "my": my_reaction,
+                "comments": [
+                    {
+                        "user": c.user.first_name or c.user.username,
+                        "body": c.body,
+                        "created": c.created_at.strftime("%d/%m %H:%M"),
+                    }
+                    for c in comments
+                ],
+            }
+        )
+
     colores_con_conteo = []
     for color_data in COLORES_COMPETENCIA:
         cid = color_data["id"]
@@ -647,6 +708,60 @@ def competencias(request):
         {
             "colores": colores_con_conteo,
             "color_actual": color_filter,
-            "fotos": fotos_actuales,
+            "fotos": fotos_model,
+            "REACTIONS": PhotoReaction.REACTIONS,
+            "photo_cache": photo_cache,
         },
+    )
+
+
+@login_required
+@require_POST
+def competencia_react(request, photo_id):
+    photo = get_object_or_404(CompetitionPhoto, pk=photo_id)
+    reaction = request.POST.get("reaction", "")
+    valid = {key for key, _ in PhotoReaction.REACTIONS}
+    if reaction not in valid:
+        return JsonResponse({"error": "Reacción inválida"}, status=400)
+
+    obj, created = PhotoReaction.objects.get_or_create(
+        photo=photo,
+        user=request.user,
+        defaults={"reaction": reaction},
+    )
+    if not created:
+        if obj.reaction == reaction:
+            obj.delete()
+            created = False
+        else:
+            obj.reaction = reaction
+            obj.save(update_fields=["reaction"])
+
+    counts = {key: 0 for key in valid}
+    for r in PhotoReaction.objects.filter(photo=photo).values("reaction"):
+        counts[r["reaction"]] += 1
+    return JsonResponse({"counts": counts, "active": reaction})
+
+
+@login_required
+@require_POST
+def competencia_comment(request, photo_id):
+    photo = get_object_or_404(CompetitionPhoto, pk=photo_id)
+    body = request.POST.get("body", "").strip()
+    if not body:
+        return JsonResponse({"error": "El comentario no puede estar vacío"}, status=400)
+    if len(body) > 200:
+        return JsonResponse({"error": "El comentario es demasiado largo"}, status=400)
+
+    comment = PhotoComment.objects.create(
+        photo=photo, user=request.user, body=body
+    )
+    return JsonResponse(
+        {
+            "id": comment.pk,
+            "user": request.user.first_name or request.user.username,
+            "body": comment.body,
+            "created": comment.created_at.strftime("%d/%m %H:%M"),
+            "count": photo.comments.count(),
+        }
     )

@@ -228,3 +228,97 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender} → {self.recipient}: {self.body[:30]}"
+
+
+class CompetitionPhoto(models.Model):
+    color = models.CharField(
+        max_length=50, verbose_name="Equipo de color"
+    )
+    filename = models.CharField(
+        max_length=255, verbose_name="Archivo"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Fecha"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["color", "filename"], name="unique_color_filename"
+            ),
+        ]
+        ordering = ["-id"]
+        verbose_name = "Foto de competencia"
+        verbose_name_plural = "Fotos de competencias"
+
+    def __str__(self):
+        return f"{self.color}/{self.filename}"
+
+
+class PhotoComment(models.Model):
+    photo = models.ForeignKey(
+        CompetitionPhoto,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Foto",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="photo_comments",
+        verbose_name="Usuario",
+    )
+    body = models.CharField(
+        max_length=200, verbose_name="Comentario"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Enviado"
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = "Comentario"
+        verbose_name_plural = "Comentarios"
+
+    def __str__(self):
+        return f"{self.user}: {self.body[:30]}"
+
+
+class PhotoReaction(models.Model):
+    REACTIONS = [
+        ("like", "👍"),
+        ("heart", "❤️"),
+        ("cry", "😭"),
+        ("llama", "🦙"),
+    ]
+
+    photo = models.ForeignKey(
+        CompetitionPhoto,
+        on_delete=models.CASCADE,
+        related_name="reactions",
+        verbose_name="Foto",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="photo_reactions",
+        verbose_name="Usuario",
+    )
+    reaction = models.CharField(
+        max_length=10, choices=REACTIONS, verbose_name="Reacción"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Fecha"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["photo", "user"], name="unique_photo_user_reaction"
+            ),
+        ]
+        verbose_name = "Reacción"
+        verbose_name_plural = "Reacciones"
+
+    def __str__(self):
+        return f"{self.user} → {self.get_reaction_display()} ({self.photo})"

@@ -21,20 +21,20 @@
 {% for item in historial %}
 <article class="bg-surface-container border {% if item.challenge.is_active %}border-secondary-container/50{% else %}border-surface-variant{% endif %} rounded-xl p-5 flex flex-col gap-3">
 <div class="flex items-center justify-between gap-3">
-<div class="flex items-center gap-3">
+<div class="flex items-center gap-3 min-w-0">
 <span class="w-9 h-9 rounded-xl {% if item.challenge.is_active %}bg-secondary-container/15 border border-secondary-container/40 text-secondary-container{% else %}bg-surface-container-high border border-surface-variant text-on-surface-variant{% endif %} flex items-center justify-center shrink-0">
 <span class="material-symbols-outlined text-[18px]">flag</span>
 </span>
-<div class="flex flex-col">
+<div class="flex flex-col min-w-0">
 {% if item.challenge.is_active %}
 <span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Vigente</span>
 {% else %}
 <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Finalizado</span>
 {% endif %}
-<span class="font-label-sm text-label-sm text-on-surface-variant">{{ item.challenge.fecha_inicio|date:"d M" }} – {{ item.challenge.fecha_fin|date:"d M Y" }} · {{ item.challenge.get_duration_days_display }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">{{ item.challenge.fecha_inicio|date:"d M" }} – {{ item.challenge.fecha_fin|date:"d M Y" }} · {{ item.challenge.get_duration_days_display }}</span>
 </div>
 </div>
-<span class="font-display-lg text-display-lg {% if item.porcentaje >= 80 %}text-secondary-container{% elif item.porcentaje >= 40 %}text-on-surface{% else %}text-on-surface-variant{% endif %}">{{ item.porcentaje }}%</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile md:font-display-lg md:text-display-lg {% if item.porcentaje >= 80 %}text-secondary-container{% elif item.porcentaje >= 40 %}text-on-surface{% else %}text-on-surface-variant{% endif %} shrink-0">{{ item.porcentaje }}%</span>
 </div>
 <p class="font-body-md text-body-md text-on-surface">{{ item.challenge.body }}</p>
 <div class="flex items-center gap-3">

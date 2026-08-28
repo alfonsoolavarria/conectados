@@ -2,6 +2,13 @@
 {% block title %}Conectados 3.0 - Códigos QR{% endblock %}
 {% block content %}
 <style>
+.qr-grid { display: grid; gap: 10px; }
+.qr-grid-leaders { grid-template-columns: repeat(2, 1fr); }
+.qr-grid-campers { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 768px) {
+    .qr-grid-leaders { grid-template-columns: repeat(2, 1fr); }
+    .qr-grid-campers { grid-template-columns: repeat(3, 1fr); }
+}
 @media print {
     @page { margin: 12mm; size: A4; }
     body { background: white !important; }
@@ -28,12 +35,23 @@
 <span class="material-symbols-outlined text-3xl text-secondary-container">qr_code_2</span>
 <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Códigos QR de Acceso</h2>
 </div>
-<button type="button" onclick="window.print()" class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-5 py-2.5 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200">
+{% if es_admin %}
+<button type="button" onclick="window.print()" class="no-print inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-5 py-2.5 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200">
 <span class="material-symbols-outlined text-[18px]">print</span>
             Imprimir todo
         </button>
+{% endif %}
 </div>
 <p class="font-label-sm text-label-sm text-on-surface-variant">Cada persona escanea su código con la cámara, le aparecerá el login con su usuario ya escrito y solo debe ingresar su contraseña.</p>
+{% if not es_admin %}
+<div class="bg-surface-container-high border border-secondary-container/40 rounded-xl p-5 flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary-container mt-0.5">lock</span>
+<div class="flex flex-col gap-1">
+<span class="font-body-md text-body-md text-on-surface">Solo el administrador puede generar los códigos QR.</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Como líder puedes ver la lista, pero los códigos se generan únicamente cuando un administrador accede a esta sección. Pide a un administrador que los imprima.</span>
+</div>
+</div>
+{% endif %}
 </section>
 <!-- Líderes -->
 {% for c in cabinas %}
@@ -48,7 +66,13 @@
 <div class="qr-grid qr-grid-leaders">
 {% for l in c.leaders %}
 <div class="qr-card bg-surface-container border border-surface-variant rounded-xl p-5 flex flex-col items-center gap-3 text-center">
+{% if l.qr %}
 <img class="qr-img-leader rounded-lg bg-white p-2" src="{{ l.qr }}" alt="QR {{ l.member.full_name }}"/>
+{% else %}
+<div class="qr-img-leader flex items-center justify-center rounded-lg bg-surface-container-low border border-dashed border-surface-variant">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant/40">qr_code_2</span>
+</div>
+{% endif %}
 <div class="flex flex-col gap-1">
 <span class="font-body-md text-body-md text-on-surface font-semibold qr-name-print">{{ l.member.full_name }}</span>
 <span class="font-label-sm text-label-sm text-secondary-container uppercase tracking-widest qr-user-print">Líder · {{ l.username }}</span>
@@ -72,7 +96,13 @@
 <div class="qr-grid qr-grid-campers">
 {% for a in c.campers %}
 <div class="qr-card bg-surface-container border border-surface-variant rounded-xl p-4 flex flex-col items-center gap-2 text-center">
+{% if a.qr %}
 <img class="qr-img-camper rounded-lg bg-white p-2" src="{{ a.qr }}" alt="QR {{ a.member.full_name }}"/>
+{% else %}
+<div class="qr-img-camper flex items-center justify-center rounded-lg bg-surface-container-low border border-dashed border-surface-variant">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant/40">qr_code_2</span>
+</div>
+{% endif %}
 <div class="flex flex-col gap-0.5">
 <span class="font-body-md text-body-md text-on-surface font-semibold qr-name-print">{{ a.member.full_name }}</span>
 <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest qr-user-print">{{ a.username }}</span>

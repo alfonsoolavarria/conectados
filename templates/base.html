@@ -107,31 +107,34 @@
             left: -100%;
             animation: scan 3s linear infinite;
         }
+        /* Prevent horizontal scroll on mobile (flex children shrink) */
+        html, body { overflow-x: hidden; max-width: 100%; }
+        main, main > * { max-width: 100%; }
         @keyframes scan {
             100% { left: 100%; }
         }
     </style>
 </head>
-<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pb-24 md:pb-0">
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pb-24 md:pb-0 overflow-x-hidden">
 <!-- TopAppBar -->
-<header class="w-full top-0 sticky bg-background border-b border-outline-variant/30 flex items-center justify-between px-margin-mobile py-4 w-full z-40">
-<a class="flex items-center gap-3 active:scale-95 transition-transform hover:opacity-80 transition-opacity" href="{% url 'home' %}">
-<span class="material-symbols-outlined text-primary text-3xl">sensors</span>
-<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary tracking-tight">Conectados 3.0</h1>
+<header class="w-full top-0 sticky bg-background border-b border-outline-variant/30 flex items-center justify-between gap-2 px-margin-mobile py-4 w-full z-40 overflow-x-clip">
+<a class="flex items-center gap-3 min-w-0 active:scale-95 transition-transform hover:opacity-80 transition-opacity" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-primary text-3xl shrink-0">sensors</span>
+<h1 class="font-headline-lg-mobile text-lg sm:text-headline-lg-mobile font-bold text-primary tracking-tight truncate whitespace-nowrap">Conectados 3.0</h1>
 </a>
-<div class="flex items-center gap-3">
-<button type="button" onclick="toggleTheme()" id="theme-toggle" class="flex items-center justify-center w-10 h-10 rounded-full border border-surface-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95 transition-transform" title="Cambiar tema">
+<div class="flex items-center gap-2 sm:gap-3 shrink-0">
+<button type="button" onclick="toggleTheme()" id="theme-toggle" class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-surface-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95 transition-transform shrink-0" title="Cambiar tema">
 <span class="material-symbols-outlined" id="theme-icon">light_mode</span>
 </button>
-<form action="{% url 'logout' %}" method="post" class="flex items-center justify-center w-10 h-10 rounded-full border border-surface-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95 transition-transform" title="Cerrar sesión">
+<form action="{% url 'logout' %}" method="post" class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-surface-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors active:scale-95 transition-transform shrink-0" title="Cerrar sesión">
 {% csrf_token %}
 <button type="submit" class="flex items-center justify-center w-full h-full">
 <span class="material-symbols-outlined">logout</span>
 </button>
 </form>
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 shrink-0">
 <a href="{% url 'perfil_imagen' %}" class="flex items-center gap-2 group">
-<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-variant hover:border-primary transition-colors active:scale-95 transition-transform">
+<div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-surface-variant hover:border-primary transition-colors active:scale-95 transition-transform shrink-0">
 {% if profile_image %}
 <img alt="Mi perfil" class="w-full h-full object-cover" src="{% static profile_image %}"/>
 {% else %}

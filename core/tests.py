@@ -2,7 +2,14 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Cabin, Member, Message
+from .models import (
+    Cabin,
+    CompetitionPhoto,
+    Member,
+    Message,
+    PhotoComment,
+    PhotoReaction,
+)
 
 User = get_user_model()
 
@@ -102,3 +109,153 @@ class MensajeriaViewTests(TestCase):
     def test_mensajeria_requires_login(self):
         response = self.client.get(reverse("mensajeria"))
         self.assertEqual(response.status_code, 302)
+
+
+class HomeViewTests(TestCase):
+    def setUp(self):
+        self.cabin = Cabin.objects.create(
+            number=1, gender="M", age_range="12-15", location="Principal"
+        )
+        self.camper_user = User.objects.create_user(
+            username="camper1", password="pass12345"
+        )
+        Member.objects.create(
+            user=self.camper_user,
+            full_name="Acampante Uno",
+            role="camper",
+            cabin=self.cabin,
+            gender="M",
+        )
+
+    def test_home_dashboard_renders_for_camper(self):
+        self.client.force_login(self.camper_user)
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Mi Espacio")
+
+
+def _make_camper(username, cabin_number):
+    cabin = Cabin.objects.create(
+        number=cabin_number, gender="M", age_range="12-15", location="A"
+    )
+    user = User.objects.create_user(username=username, password="pass12345")
+    Member.objects.create(
+        user=user,
+        full_name=f"Acampante {username}",
+        role="camper",
+        cabin=cabin,
+        gender="M",
+    )
+    return user
+
+
+class CompetenciasViewTests(TestCase):
+    def setUp(self):
+        self.user = _make_camper("camperx", 1)
+        self.user2 = _make_camper("campery", 2)
+        self.photo = CompetitionPhoto.objects.create(
+            color="blanco", filename="uno.jpg"
+        )
+
+    def test_competencias_renders_for_member(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("competencias"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Competencias")
+
+    def test_competencias_redirects_for_non_member(self):
+        user = User.objects.create_user(username="nobody", password="pass12345")
+        self.client.force_login(user)
+        response = self.client.get(reverse("competencias"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_react_adds_reaction(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_react", args=[self.photo.id]),
+            {"reaction": "heart"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["counts"]["heart"], 1)
+        self.assertTrue(
+            PhotoReaction.objects.filter(
+                photo=self.photo, user=self.user, reaction="heart"
+            ).exists()
+        )
+
+    def test_react_toggles_off_when_same(self):
+        PhotoReaction.objects.create(
+            photo=self.photo, user=self.user, reaction="like"
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_react", args=[self.photo.id]),
+            {"reaction": "like"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["counts"]["like"], 0)
+        self.assertFalse(
+            PhotoReaction.objects.filter(photo=self.photo, user=self.user).exists()
+        )
+
+    def test_react_changes_reaction(self):
+        PhotoReaction.objects.create(
+            photo=self.photo, user=self.user, reaction="like"
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_react", args=[self.photo.id]),
+            {"reaction": "llama"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["counts"]["like"], 0)
+        self.assertEqual(response.json()["counts"]["llama"], 1)
+
+    def test_react_rejects_invalid(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_react", args=[self.photo.id]),
+            {"reaction": "sad"},
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_react_requires_login(self):
+        response = self.client.post(
+            reverse("competencia_react", args=[self.photo.id]),
+            {"reaction": "like"},
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_comment_creates_comment(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment", args=[self.photo.id]),
+            {"body": "Hola de prueba"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(PhotoComment.objects.count(), 1)
+        self.assertEqual(response.json()["body"], "Hola de prueba")
+
+    def test_comment_empty_rejected(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment", args=[self.photo.id]),
+            {"body": "   "},
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_comment_too_long_rejected(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment", args=[self.photo.id]),
+            {"body": "x" * 300},
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_comment_allows_200_chars(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("competencia_comment", args=[self.photo.id]),
+            {"body": "x" * 200},
+        )
+        self.assertEqual(response.status_code, 200)
