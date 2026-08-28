@@ -12,6 +12,7 @@ from django.db.models import Count, Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import LoginForm
@@ -295,8 +296,9 @@ def mensajeria(request):
                     "unread": no_leidos,
                 }
             )
+        default_ts = datetime.min.replace(tzinfo=timezone.get_current_timezone())
         threads.sort(
-            key=lambda t: t["last"].created_at if t["last"] else datetime.min,
+            key=lambda t: t["last"].created_at if t["last"] else default_ts,
             reverse=True,
         )
     return render(
