@@ -20,6 +20,8 @@ from .forms import LoginForm
 from .models import (
     Cabin,
     Challenge,
+    ChallengeComment,
+    ChallengeCommentReaction,
     CompetitionPhoto,
     DailyCommitment,
     Message,
@@ -82,6 +84,60 @@ def _desafio_activo(challenges):
         if ch.is_active:
             return ch
     return None
+
+
+def _color_info(cid):
+    for c in COLORES_COMPETENCIA:
+        if c["id"] == cid:
+            return c
+    return {"id": cid, "label": cid, "bg": "#353534", "text": "#e5e2e1", "border": "#5d3f3d"}
+
+
+def _photo_context(photo, user):
+    """Construye el dict de caché para el modal (reacciones + comentarios)."""
+    reactions = list(photo.reactions.all())
+    counts = {key: 0 for key, _ in PhotoReaction.REACTIONS}
+    for r in reactions:
+        if r.reaction in counts:
+            counts[r.reaction] += 1
+    my_reaction = next(
+        (r.reaction for r in reactions if r.user_id == user.id), None
+    )
+    reaction_people = {}
+    for r in reactions:
+        name = r.user.first_name or r.user.username
+        reaction_people.setdefault(r.reaction, []).append(name)
+    comments = list(
+        photo.comments.select_related("user", "parent").order_by("created_at")
+    )
+    return {
+        "id": photo.id,
+        "counts": counts,
+        "my": my_reaction,
+        "people": reaction_people,
+        "comments": _comentarios_anidados(comments, user),
+    }
+
+
+def _feed_fotos(user, limit=None):
+    """Fotos más recientes (todas las secciones de color) para el feed."""
+    qs = CompetitionPhoto.objects.order_by("-created_at", "-id")
+    if limit:
+        qs = qs[:limit]
+    items = []
+    for p in qs:
+        items.append(
+            {
+                "photo": p,
+                "color": p.color,
+                "color_info": _color_info(p.color),
+                "path": f"competencia/{p.color}/{p.filename}",
+                "comment_count": p.comments.count(),
+                "reaction_count": p.reactions.count(),
+            }
+        )
+    cache = {p.id: _photo_context(p, user) for p in qs}
+    return items, cache
 
 MESES_ES = [
     "",
@@ -182,6 +238,10 @@ def home(request):
         is_completed=True
     ).count()
     context["challenge"] = active_challenge
+    feed_items, feed_cache = _feed_fotos(request.user, limit=12)
+    context["feed_items"] = feed_items
+    context["feed_cache"] = feed_cache
+    context["REACTIONS"] = PhotoReaction.REACTIONS
     return render(request, "home.html", context)
 
 
@@ -257,6 +317,7 @@ def _dashboard_lideres(request):
     cabinas_fem = [c for c in cabanas_data if c["cabin"].gender == "F"]
     my_challenge = _desafio_activo(member.cabin.challenges.all())
     my_days = _mes_dias(request.user, challenge=my_challenge)
+    feed_items, feed_cache = _feed_fotos(request.user, limit=12)
     return render(
         request,
         "lideres.html",
@@ -274,6 +335,10 @@ def _dashboard_lideres(request):
             "total_leaders": sum(len(c["leaders"]) for c in cabanas_data),
             "num_days": my_challenge.duration_days if my_challenge else calendar.monthrange(hoy.year, hoy.month)[1],
             "my_days": my_days,
+            "challenge": my_challenge,
+            "feed_items": feed_items,
+            "feed_cache": feed_cache,
+            "REACTIONS": PhotoReaction.REACTIONS,
         },
     )
 
@@ -535,6 +600,202 @@ def challenge_historial(request, challenge_id):
     )
 
 
+CHALLENGE_REACTIONS = list(ChallengeCommentReaction.REACTIONS)
+
+
+def _challenge_comment_to_dict(c, user):
+    reactions = c.reactions.all()
+    counts = {key: 0 for key, _ in CHALLENGE_REACTIONS}
+    people = {key: [] for key, _ in CHALLENGE_REACTIONS}
+    for r in reactions:
+        if r.reaction in counts:
+            counts[r.reaction] += 1
+        name = r.user.first_name or r.user.username
+        if name not in people[r.reaction]:
+            people[r.reaction].append(name)
+    my_reaction = next(
+        (r.reaction for r in reactions if r.user_id == user.id), None
+    )
+    is_leader = False
+    m = getattr(c.user, "member", None)
+    if m is not None:
+        is_leader = m.role == "leader"
+    return {
+        "id": c.pk,
+        "user": c.user.first_name or c.user.username,
+        "user_id": c.user_id,
+        "is_leader": is_leader,
+        "body": c.body,
+        "created": _fmt_fecha_caracas(c.created_at),
+        "counts": counts,
+        "people": people,
+        "my_reaction": my_reaction,
+        "can_delete": c.user_id == user.id or _es_lider(user),
+        "reaction_chips": [
+            {
+                "key": key,
+                "emoji": dict(CHALLENGE_REACTIONS)[key],
+                "count": counts[key],
+                "people": people[key],
+            }
+            for key, _ in CHALLENGE_REACTIONS
+            if counts[key] > 0
+        ],
+        "replies": [],
+    }
+
+
+def _challenge_comments_tree(comments, user):
+    todos = {c.pk: _challenge_comment_to_dict(c, user) for c in comments}
+    raiz = []
+    for c in comments:
+        d = todos[c.pk]
+        if c.parent_id is not None and c.parent_id in todos:
+            todos[c.parent_id]["replies"].append(d)
+        else:
+            raiz.append(d)
+    return raiz
+
+
+@login_required
+def muro_desafio(request, challenge_id):
+    ch = get_object_or_404(Challenge, pk=challenge_id)
+    member = getattr(request.user, "member", None)
+    if member is None or member.cabin_id != ch.cabin_id:
+        return HttpResponseRedirect(reverse("home"))
+
+    comments = list(
+        ch.comments.select_related("user", "parent")
+        .prefetch_related("reactions__user")
+        .order_by("created_at")
+    )
+    total = request.user.commitments.filter(
+        date__gte=ch.fecha_inicio, date__lte=ch.fecha_fin, is_completed=True
+    ).count()
+    return render(
+        request,
+        "muro_desafio.html",
+        {
+            "challenge": ch,
+            "cab": ch.cabin,
+            "comentarios": _challenge_comments_tree(comments, request.user),
+            "total_comentarios": len(comments),
+            "REACTIONS": CHALLENGE_REACTIONS,
+            "es_lider": _es_lider(request.user),
+            "current_user_id": request.user.id,
+            "mi_progreso": total,
+        },
+    )
+
+
+@login_required
+@require_POST
+def muro_desafio_comment(request, challenge_id):
+    ch = get_object_or_404(Challenge, pk=challenge_id)
+    member = getattr(request.user, "member", None)
+    if member is None or member.cabin_id != ch.cabin_id:
+        return JsonResponse({"error": "No tienes permiso"}, status=403)
+
+    body = request.POST.get("body", "").strip()
+    if not body:
+        return JsonResponse({"error": "El comentario no puede estar vacío"}, status=400)
+    if len(body) > 500:
+        return JsonResponse({"error": "El comentario es demasiado largo"}, status=400)
+
+    parent = None
+    parent_id = request.POST.get("parent") or None
+    if parent_id:
+        parent = ChallengeComment.objects.filter(pk=parent_id, challenge=ch).first()
+        if parent is None or parent.parent_id is not None:
+            return JsonResponse(
+                {"error": "Solo se permiten respuestas a un nivel"}, status=400
+            )
+
+    comment = ChallengeComment.objects.create(
+        challenge=ch, user=request.user, body=body, parent=parent
+    )
+    m = getattr(request.user, "member", None)
+    return JsonResponse(
+        {
+            "id": comment.pk,
+            "parent_id": comment.parent_id,
+            "user": request.user.first_name or request.user.username,
+            "user_id": request.user.id,
+            "is_leader": m is not None and m.role == "leader",
+            "body": comment.body,
+            "created": _fmt_fecha_caracas(comment.created_at),
+            "counts": {k: 0 for k, _ in CHALLENGE_REACTIONS},
+            "people": {k: [] for k, _ in CHALLENGE_REACTIONS},
+            "my_reaction": None,
+            "can_delete": True,
+            "count": ch.comments.count(),
+        }
+    )
+
+
+@login_required
+@require_POST
+def muro_desafio_comment_delete(request, comment_id):
+    comment = get_object_or_404(
+        ChallengeComment.objects.select_related("challenge"), pk=comment_id
+    )
+    member = getattr(request.user, "member", None)
+    is_leader = member is not None and member.role == "leader"
+    if comment.user_id != request.user.id and not is_leader:
+        return JsonResponse({"error": "No tienes permiso"}, status=403)
+    challenge_id = comment.challenge_id
+    count_after = comment.challenge.comments.count() - 1
+    comment.delete()
+    return JsonResponse({"id": comment_id, "count": max(count_after, 0)})
+
+
+@login_required
+@require_POST
+def muro_desafio_react(request, comment_id):
+    comment = get_object_or_404(
+        ChallengeComment.objects.select_related("challenge"), pk=comment_id
+    )
+    member = getattr(request.user, "member", None)
+    if member is None or member.cabin_id != comment.challenge.cabin_id:
+        return JsonResponse({"error": "No tienes permiso"}, status=403)
+
+    reaction = request.POST.get("reaction", "")
+    valid = {key for key, _ in CHALLENGE_REACTIONS}
+    if reaction not in valid:
+        return JsonResponse({"error": "Reacción inválida"}, status=400)
+
+    obj, created = ChallengeCommentReaction.objects.get_or_create(
+        comment=comment,
+        user=request.user,
+        defaults={"reaction": reaction},
+    )
+    if not created:
+        if obj.reaction == reaction:
+            obj.delete()
+        else:
+            obj.reaction = reaction
+            obj.save(update_fields=["reaction"])
+
+    active = (
+        ChallengeCommentReaction.objects.filter(
+            comment=comment, user=request.user
+        )
+        .values_list("reaction", flat=True)
+        .first()
+    )
+
+    counts = {key: 0 for key in valid}
+    people = {key: [] for key in valid}
+    for r in ChallengeCommentReaction.objects.filter(
+        comment=comment
+    ).select_related("user"):
+        counts[r.reaction] += 1
+        name = r.user.first_name or r.user.username
+        if name not in people[r.reaction]:
+            people[r.reaction].append(name)
+    return JsonResponse({"counts": counts, "people": people, "active": active})
+
+
 @login_required
 def mis_desafios(request):
     member = getattr(request.user, "member", None)
@@ -757,15 +1018,7 @@ def competencias(request):
                 "my_reaction": my_reaction,
             }
         )
-        photo_cache.append(
-            {
-                "id": photo.id,
-                "counts": counts,
-                "my": my_reaction,
-                "people": reaction_people,
-                "comments": _comentarios_anidados(comments, request.user),
-            }
-        )
+        photo_cache.append(_photo_context(photo, request.user))
 
     colores_con_conteo = []
     for color_data in COLORES_COMPETENCIA:
@@ -784,6 +1037,25 @@ def competencias(request):
             "photo_cache": photo_cache,
             "es_lider": _es_lider(request.user),
             "current_user_id": request.user.id,
+        },
+    )
+
+
+@login_required
+def entrevistas(request):
+    entrevistas_dir = settings.BASE_DIR / "static" / "entrevistas"
+    videos = []
+    if entrevistas_dir.is_dir():
+        videos = sorted(
+            f.name
+            for f in entrevistas_dir.iterdir()
+            if f.suffix.lower() in (".mp4", ".webm", ".ogg", ".mov", ".m4v")
+        )
+    return render(
+        request,
+        "entrevistas.html",
+        {
+            "videos": [f"entrevistas/{v}" for v in videos],
         },
     )
 

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Conectados 3.0 - Entrevistas{% endblock %}
+{% block content %}
+<!-- Botón regresar -->
+<section>
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors duration-200" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Regresar
+        </a>
+</section>
+<!-- Encabezado -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl text-secondary-container">video_library</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Entrevistas</h2>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Videos de la plataforma</p>
+</section>
+<!-- Galería de videos -->
+<section class="flex flex-col gap-4">
+{% if videos %}
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+{% for v in videos %}
+<div class="bg-surface-container border border-surface-variant rounded-xl overflow-hidden flex flex-col hover:border-secondary-container/60 transition-all duration-300">
+<video class="w-full aspect-video bg-black object-contain" controls preload="metadata" playsinline>
+<source src="{% static v %}" type="video/mp4"/>
+Tu navegador no soporta video HTML5.
+</video>
+<div class="px-4 py-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container text-[18px]">play_circle</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest truncate">{{ v|cut:"entrevistas/" }}</span>
+</div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="bg-surface-container border border-surface-variant rounded-xl p-8 text-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant/30 mb-2">video_library</span>
+<p class="font-body-md text-body-md text-on-surface-variant">Aún no hay entrevistas.</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Agrega videos en <code class="bg-surface-container-high px-2 py-0.5 rounded text-secondary-container">static/entrevistas/</code></p>
+</div>
+{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Desafío en vivo{% endblock %}
+{% block content %}
+<!-- Botón regresar -->
+<section>
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors duration-200" href="{% url 'home' %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Regresar
+        </a>
+</section>
+<!-- Encabezado del desafío -->
+<section class="bg-surface-container relative overflow-hidden border {% if challenge.is_active %}border-secondary-container/40{% else %}border-surface-variant{% endif %} rounded-xl p-5 md:p-6 flex flex-col gap-3">
+<div class="circuit-line"></div>
+<div class="relative z-10 flex items-center gap-3">
+<span class="w-10 h-10 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary-container">forum</span>
+</span>
+<div class="flex flex-col min-w-0">
+{% if challenge.is_active %}
+<span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Desafío en vivo · Cabaña {{ cab.number }}</span>
+{% else %}
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Desafío finalizado · Cabaña {{ cab.number }}</span>
+{% endif %}
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ challenge.body }}</h2>
+</div>
+</div>
+<div class="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">{{ challenge.fecha_inicio|date:"d M" }} – {{ challenge.fecha_fin|date:"d M Y" }} · {{ challenge.get_duration_days_display }}</span>
+<span class="inline-flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">person</span> Por {{ challenge.author_name }}
+</span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Mi progreso: {{ mi_progreso }}/{{ challenge.duration_days }}
+</span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary-container">
+<span class="material-symbols-outlined text-[14px]">chat</span> <span id="total-comments">{{ total_comentarios }}</span> comentarios
+</span>
+</div>
+</section>
+
+<!-- Hilo de conversación -->
+<section class="flex flex-col gap-4">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container">chat</span>
+            Conversación
+        </h3>
+<div id="challenge-thread" class="flex flex-col gap-4">
+{% for c in comentarios %}
+{% include "partials/challenge_comment.html" with c=c is_reply=False %}
+{% endfor %}
+{% if not comentarios %}
+<div id="thread-empty" class="bg-surface-container border border-surface-variant rounded-xl p-8 text-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant/30 mb-2">forum</span>
+<p class="font-body-md text-body-md text-on-surface-variant">Aún no hay mensajes. ¡Sé el primero en escribir!</p>
+</div>
+{% endif %}
+</div>
+</section>
+
+<!-- Caja de comentario -->
+<section class="bg-surface-container border border-surface-variant rounded-xl p-4 sticky bottom-20 md:bottom-4 z-30">
+<form id="comment-form" onsubmit="return postComment(event)">
+<input type="hidden" name="parent" id="reply-target" value=""/>
+<div class="flex items-center gap-2">
+<input id="comment-input" type="text" maxlength="500" placeholder="Escribe algo sobre el desafío... (máx. 500)" class="flex-1 min-w-0 bg-surface-container-low border border-surface-variant rounded-full px-4 py-2.5 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:border-secondary-container focus:outline-none focus:ring-1 focus:ring-secondary-container/50 transition-colors"/>
+<button type="submit" class="w-10 h-10 shrink-0 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center active:scale-90 transition-transform" title="Enviar">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+<div id="reply-banner" class="hidden mt-2 flex items-center gap-2 bg-surface-container-high rounded-full px-3 py-1.5 font-label-sm text-label-sm text-secondary-container">
+<span class="material-symbols-outlined text-[14px]">reply</span>
+<span id="reply-label">Respondiendo...</span>
+<button type="button" onclick="cancelReply()" class="ml-auto text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</form>
+</section>
+
+<script>
+(function () {
+    var EMOJI = { like: "👍", heart: "❤️", fire: "🔥", wow: "😮", sad: "😢" };
+    var challengeId = {{ challenge.id }};
+    var currentReplyId = null;
+    var thread = document.getElementById("challenge-thread");
+
+    function csrf() {
+        var el = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (el) return el.value;
+        var m = document.cookie.match(new RegExp("(?:^|; )csrftoken=([^;]*)"));
+        return m ? decodeURIComponent(m[1]) : "";
+    }
+
+    window.postComment = function (event) {
+        event.preventDefault();
+        var input = document.getElementById("comment-input");
+        var body = input.value.trim();
+        if (!body) return false;
+        var fd = new FormData();
+        fd.append("body", body);
+        if (currentReplyId) fd.append("parent", currentReplyId);
+        fetch("{% url 'muro_desafio_comment' challenge.id %}", {
+            method: "POST", headers: { "X-CSRFToken": csrf() }, body: fd
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.error) { alert(data.error); return; }
+            var empty = document.getElementById("thread-empty");
+            if (empty) empty.remove();
+            if (currentReplyId) {
+                var parent = document.querySelector('[data-comment-id="' + currentReplyId + '"] .comment-replies');
+                if (parent) parent.appendChild(renderReply(data));
+            } else {
+                thread.appendChild(renderComment(data));
+            }
+            document.getElementById("total-comments").textContent = data.count;
+            input.value = "";
+            cancelReply();
+            scrollToBottom();
+        });
+        return false;
+    };
+
+    window.startReply = function (cid, who) {
+        currentReplyId = cid;
+        var ban = document.getElementById("reply-banner");
+        document.getElementById("reply-label").textContent = "Respondiendo a " + (who || "...");
+        ban.classList.remove("hidden");
+        document.getElementById("comment-input").focus();
+    };
+
+    window.cancelReply = function () {
+        currentReplyId = null;
+        document.getElementById("reply-banner").classList.add("hidden");
+        document.getElementById("reply-target").value = "";
+    };
+
+    window.react = function (btn, cid, key) {
+        var fd = new FormData();
+        fd.append("reaction", key);
+        fetch("{% url 'muro_desafio_react' 0 %}".replace("0", cid), {
+            method: "POST", headers: { "X-CSRFToken": csrf() }, body: fd
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.error) { alert(data.error); return; }
+            var wrap = document.querySelector('[data-comment-id="' + cid + '"] .comment-reactions');
+            if (!wrap) return;
+            wrap.innerHTML = "";
+            Object.keys(EMOJI).forEach(function (k) {
+                var c = (data.counts && data.counts[k]) || 0;
+                if (c === 0) return;
+                var b = document.createElement("button");
+                b.type = "button";
+                b.className = "reaction-chip" + (data.active === k ? " is-active" : "");
+                b.textContent = EMOJI[k] + " " + c;
+                b.title = (data.people[k] || []).join(", ");
+                b.onclick = (function (cid2, k2) { return function () { react(null, cid2, k2); }; })(cid, k);
+                wrap.appendChild(b);
+            });
+        });
+    };
+
+    window.deleteComment = function (cid) {
+        if (!confirm("¿Seguro que quieres eliminar este comentario?")) return;
+        var fd = new FormData();
+        fetch("{% url 'muro_desafio_comment_delete' 0 %}".replace("0", cid), {
+            method: "POST", headers: { "X-CSRFToken": csrf() }, body: fd
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.error) { alert(data.error); return; }
+            var el = document.querySelector('[data-comment-id="' + cid + '"]');
+            if (el) el.remove();
+            document.getElementById("total-comments").textContent = data.count;
+        });
+    };
+
+    function badget(name) {
+        var b = document.createElement("span");
+        b.className = "w-8 h-8 rounded-full bg-surface-container-high border border-surface-variant flex items-center justify-center font-label-sm text-label-sm text-on-surface-variant shrink-0";
+        b.textContent = escapeHtml((name || "?").charAt(0).toUpperCase());
+        return b;
+    }
+
+    function renderComment(c) {
+        var el = document.createElement("div");
+        el.className = "flex flex-col gap-1";
+        el.dataset.commentId = c.id;
+        el.appendChild(renderBody(c, false));
+        var replies = document.createElement("div");
+        replies.className = "comment-replies mt-1 flex flex-col gap-1.5 border-l-2 border-surface-variant/40 pl-3";
+        (c.replies || []).forEach(function (r) { replies.appendChild(renderReply(r)); });
+        el.appendChild(replies);
+        return el;
+    }
+
+    function renderReply(r) {
+        var el = document.createElement("div");
+        el.className = "bg-surface-container-low rounded-lg p-2";
+        el.dataset.commentId = r.id;
+        el.appendChild(renderBody(r, true));
+        return el;
+    }
+
+    function renderBody(c, isReply) {
+        var outer = document.createElement("div");
+        outer.className = "flex flex-col gap-1";
+        var head = document.createElement("div");
+        head.className = "flex items-center gap-2 flex-wrap";
+        head.appendChild(badget(c.user));
+        var name = document.createElement("span");
+        name.className = "font-label-sm text-label-sm text-on-surface-variant";
+        name.textContent = escapeHtml(c.user);
+        head.appendChild(name);
+        if (c.is_leader) {
+            var lb = document.createElement("span");
+            lb.className = "inline-flex items-center gap-1 bg-secondary-container/15 border border-secondary-container/40 text-secondary-container rounded-full px-2 py-0.5 font-label-sm text-label-sm text-[10px] uppercase tracking-widest";
+            lb.textContent = "Líder";
+            head.appendChild(lb);
+        }
+        var time = document.createElement("span");
+        time.className = "font-label-sm text-label-sm text-on-surface-variant/50 ml-auto";
+        time.textContent = escapeHtml(c.created || "");
+        head.appendChild(time);
+        outer.appendChild(head);
+        var bodyel = document.createElement("p");
+        bodyel.className = "font-body-md text-body-md text-on-surface break-words";
+        bodyel.textContent = c.body;
+        outer.appendChild(bodyel);
+
+        // reacciones
+        var reactWrap = document.createElement("div");
+        reactWrap.className = "comment-reactions mt-1 flex flex-wrap items-center gap-1.5";
+        outer.appendChild(reactWrap);
+
+        var actions = document.createElement("div");
+        actions.className = "flex items-center gap-1.5 pt-1 flex-wrap";
+        if (!isReply) {
+            var rep = document.createElement("button");
+            rep.type = "button";
+            rep.className = "font-label-sm text-label-sm text-on-surface-variant/70 hover:text-secondary-container transition-colors";
+            rep.textContent = "Responder";
+            rep.onclick = (function (cid, who) { return function () { startReply(cid, who); }; })(c.id, c.user);
+            actions.appendChild(rep);
+        }
+        Object.keys(EMOJI).forEach(function (k) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = "font-label-sm text-label-sm text-on-surface-variant/70 hover:text-secondary-container transition-colors";
+            b.textContent = EMOJI[k];
+            b.title = k;
+            b.onclick = (function (cid, kk) { return function () { react(null, cid, kk); }; })(c.id, k);
+            actions.appendChild(b);
+        });
+        if (c.can_delete) {
+            var del = document.createElement("button");
+            del.type = "button";
+            del.className = "font-label-sm text-label-sm text-error ml-auto";
+            del.textContent = "Eliminar";
+            del.onclick = (function (cid) { return function () { deleteComment(cid); }; })(c.id);
+            actions.appendChild(del);
+        }
+        outer.appendChild(actions);
+        return outer;
+    }
+
+    function scrollToBottom() {
+        var box = document.getElementById("challenge-thread");
+        if (box) box.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+})();
+</script>
+<style>
+.reaction-chip {
+    display: inline-flex; align-items: center; gap: 2px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 9999px; padding: 2px 8px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: #e5e2e1;
+    transition: all .15s;
+}
+.reaction-chip:hover { border-color: rgba(250,189,0,0.6); }
+.reaction-chip.is-active { background: rgba(250,189,0,0.15); border-color: rgba(250,189,0,0.5); }
+</style>
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

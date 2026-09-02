@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from .models import Cabin, Challenge, DailyCommitment, Member, Message
+from .models import (
+    Cabin,
+    Challenge,
+    ChallengeComment,
+    ChallengeCommentReaction,
+    DailyCommitment,
+    Member,
+    Message,
+)
 
 
 @admin.register(DailyCommitment)
@@ -37,3 +45,17 @@ class ChallengeAdmin(admin.ModelAdmin):
     list_display = ("cabin", "body", "created_by", "created_at")
     list_filter = ("cabin", "created_at")
     search_fields = ("body", "created_by__username", "created_by__email")
+
+
+@admin.register(ChallengeComment)
+class ChallengeCommentAdmin(admin.ModelAdmin):
+    list_display = ("challenge", "user", "body", "created_at")
+    list_filter = ("challenge", "created_at")
+    search_fields = ("body", "user__username")
+
+
+@admin.register(ChallengeCommentReaction)
+class ChallengeCommentReactionAdmin(admin.ModelAdmin):
+    list_display = ("comment", "user", "reaction", "created_at")
+    list_filter = ("reaction",)
+    search_fields = ("user__username",)

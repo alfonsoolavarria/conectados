@@ -14,6 +14,10 @@
 <span class="material-symbols-outlined text-[16px]">emoji_events</span>
             Mis Desafíos
         </a>
+<a class="inline-flex items-center justify-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-4 py-2.5 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200" href="{% if challenge %}{% url 'muro_desafio' challenge.id %}{% else %}{% url 'challenge' request.user.member.cabin.id %}{% endif %}">
+<span class="material-symbols-outlined text-[16px]">forum</span>
+            Desafío en vivo
+        </a>
 <a class="inline-flex items-center justify-center gap-2 bg-surface-container border border-outline-variant rounded-full px-4 py-2.5 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest hover:border-secondary-container/60 hover:text-secondary-container transition-colors duration-300" href="{% url 'qr_lideres' %}">
 <span class="material-symbols-outlined text-[16px]">qr_code_2</span>
             Accesos QR
@@ -21,6 +25,10 @@
 <a class="inline-flex items-center justify-center gap-2 bg-surface-container border border-outline-variant rounded-full px-4 py-2.5 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest hover:border-secondary-container/60 hover:text-secondary-container transition-colors duration-300" href="{% url 'competencias' %}">
 <span class="material-symbols-outlined text-[16px]">emoji_events</span>
             Competencias
+        </a>
+<a class="inline-flex items-center justify-center gap-2 bg-surface-container border border-outline-variant rounded-full px-4 py-2.5 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest hover:border-secondary-container/60 hover:text-secondary-container transition-colors duration-300" href="{% url 'entrevistas' %}">
+<span class="material-symbols-outlined text-[16px]">video_library</span>
+            Entrevistas
         </a>
 </div>
 </div>
@@ -66,6 +74,7 @@
 {% include "partials/days_grid.html" with days=my_days.days %}
 </div>
 </section>
+{% include "partials/photo_feed.html" %}
 <!-- Filtro de cabañas -->
 <section class="no-print flex flex-col gap-3">
 <div class="flex items-center gap-3">

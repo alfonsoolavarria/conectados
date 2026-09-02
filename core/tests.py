@@ -6,6 +6,8 @@ from django.utils import timezone
 from .models import (
     Cabin,
     Challenge,
+    ChallengeComment,
+    ChallengeCommentReaction,
     CompetitionPhoto,
     DailyCommitment,
     Member,
@@ -561,3 +563,98 @@ class ToggleDayTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("home"))
+
+
+class MuroDesafioTests(TestCase):
+    def setUp(self):
+        self.cabin = Cabin.objects.create(
+            number=1, gender="M", age_range="12-15", location="Principal"
+        )
+        self.camper_user = User.objects.create_user(
+            username="camper1", password="pass12345"
+        )
+        Member.objects.create(
+            user=self.camper_user,
+            full_name="Acampante Uno",
+            role="camper",
+            cabin=self.cabin,
+            gender="M",
+        )
+        self.other_cabin = Cabin.objects.create(
+            number=99, gender="M", age_range="12-15", location="Otra"
+        )
+        self.other_user = User.objects.create_user(
+            username="otro", password="pass12345"
+        )
+        Member.objects.create(
+            user=self.other_user,
+            full_name="Otro",
+            role="camper",
+            cabin=self.other_cabin,
+            gender="M",
+        )
+        self.challenge = Challenge.objects.create(
+            cabin=self.cabin,
+            body="Leer y orar",
+            duration_days=10,
+            created_by=self.camper_user,
+        )
+
+    def test_camper_can_view_own_cabin_muro(self):
+        self.client.force_login(self.camper_user)
+        response = self.client.get(
+            reverse("muro_desafio", args=[self.challenge.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Desafío en vivo")
+        self.assertContains(response, "Leer y orar")
+
+    def test_camper_from_other_cabin_redirected(self):
+        self.client.force_login(self.other_user)
+        response = self.client.get(
+            reverse("muro_desafio", args=[self.challenge.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("home"))
+
+    def test_comment_and_reaction(self):
+        self.client.force_login(self.camper_user)
+        url = reverse("muro_desafio_comment", args=[self.challenge.pk])
+        response = self.client.post(url, {"body": "¡Vamos equipo!"})
+        self.assertEqual(response.status_code, 200)
+        cid = response.json()["id"]
+        self.assertTrue(
+            ChallengeComment.objects.filter(pk=cid, body="¡Vamos equipo!").exists()
+        )
+        # reacción
+        react = self.client.post(
+            reverse("muro_desafio_react", args=[cid]), {"reaction": "like"}
+        )
+        self.assertEqual(react.status_code, 200)
+        self.assertEqual(react.json()["active"], "like")
+        self.assertTrue(
+            ChallengeCommentReaction.objects.filter(
+                comment_id=cid, user=self.camper_user, reaction="like"
+            ).exists()
+        )
+
+    def test_other_cabin_cannot_comment(self):
+        self.client.force_login(self.other_user)
+        response = self.client.post(
+            reverse("muro_desafio_comment", args=[self.challenge.pk]),
+            {"body": "intruso"},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_owner_can_delete_comment(self):
+        self.client.force_login(self.camper_user)
+        comment = ChallengeComment.objects.create(
+            challenge=self.challenge, user=self.camper_user, body="hola"
+        )
+        response = self.client.post(
+            reverse("muro_desafio_comment_delete", args=[comment.pk]),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(
+            ChallengeComment.objects.filter(pk=comment.pk).exists()
+        )

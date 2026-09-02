@@ -26,6 +26,7 @@
 <div class="bg-cover bg-center w-full h-full" data-alt="A subtle, abstract geometric pattern consisting of interlocking digital grid lines and concentric circular signals, rendered in glowing red and yellow against a pure black background. The image should feel like a high-tech circuit board overlay." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBu-xVymTyDt0jWb-0bp8xBQlowVJrb5l3ChK520lWaD83WHtqpRnPpnGi9JuA73PRJjPqwYyHLcEnywE88ETTFh45wHmM8bFlKAazfmLdYMvaRm4RQin8Qs14exEvyLszhJvdYwsjIsqp_iQ75QXjv8N5WQFsP6KL1rikrQV6KySdLv4T76M29DrBy5DfLwYkiXHSH6TuRtRdPOW6qip1p24IAp85JQtm3_D2UexNcW53t16SQhqGh')"></div>
 </div>
 </section>
+{% include "partials/photo_feed.html" %}
 {% if challenge %}
 <!-- Challenge Card Module -->
 <section class="bg-surface-container relative overflow-hidden border border-secondary-container/40 rounded-xl p-6 md:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
@@ -44,6 +45,10 @@
 <span class="material-symbols-outlined text-[14px]">person</span> Por {{ challenge.author_name }}
 </span>
 </div>
+<a class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-5 py-2.5 mt-3 w-fit hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200" href="{% url 'muro_desafio' challenge.id %}">
+<span class="material-symbols-outlined text-[16px]">forum</span>
+            Desafío en vivo
+        </a>
 </div>
 </section>
 {% endif %}
@@ -78,11 +83,27 @@
 </div>
 <span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-secondary-container transition-colors duration-300 shrink-0">arrow_forward</span>
 </a>
+<a class="group bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl p-6 flex items-center gap-4 hover:border-secondary-container/60 transition-colors duration-300 active:scale-[0.98] transition-transform" href="{% if challenge %}{% url 'muro_desafio' challenge.id %}{% else %}{% url 'mis_desafios' %}{% endif %}">
+<span class="material-symbols-outlined text-3xl text-secondary-container group-hover:scale-110 transition-transform duration-300 shrink-0">forum</span>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface truncate">Desafío en vivo</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1 uppercase tracking-widest truncate">{% if challenge %}Conversa sobre el desafío de tu cabaña{% else %}Aún no hay desafío vigente{% endif %}</span>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-secondary-container transition-colors duration-300 shrink-0">arrow_forward</span>
+</a>
 <a class="group bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl p-6 flex items-center gap-4 hover:border-secondary-container/60 transition-colors duration-300 active:scale-[0.98] transition-transform sm:col-span-2" href="{% url 'competencias' %}">
 <span class="material-symbols-outlined text-3xl text-secondary-container group-hover:scale-110 transition-transform duration-300 shrink-0">emoji_events</span>
 <div class="flex flex-col min-w-0 flex-1">
 <span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface truncate">Competencias</span>
 <span class="font-label-sm text-label-sm text-on-surface-variant mt-1 uppercase tracking-widest truncate">Fotos por equipo de color</span>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-secondary-container transition-colors duration-300 shrink-0">arrow_forward</span>
+</a>
+<a class="group bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl p-6 flex items-center gap-4 hover:border-secondary-container/60 transition-colors duration-300 active:scale-[0.98] transition-transform sm:col-span-2" href="{% url 'entrevistas' %}">
+<span class="material-symbols-outlined text-3xl text-secondary-container group-hover:scale-110 transition-transform duration-300 shrink-0">video_library</span>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface truncate">Entrevistas</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1 uppercase tracking-widest truncate">Videos de la plataforma</span>
 </div>
 <span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-secondary-container transition-colors duration-300 shrink-0">arrow_forward</span>
 </a>

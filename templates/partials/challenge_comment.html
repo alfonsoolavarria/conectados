@@ -1,0 +1,35 @@
+{% load static %}
+<div class="flex flex-col gap-1{% if is_reply %} bg-surface-container-low rounded-lg p-2{% endif %}" data-comment-id="{{ c.id }}">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="w-8 h-8 rounded-full bg-surface-container-high border border-surface-variant flex items-center justify-center font-label-sm text-label-sm text-on-surface-variant shrink-0">{{ c.user|first|upper }}</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">{{ c.user }}</span>
+{% if c.is_leader %}
+<span class="inline-flex items-center gap-1 bg-secondary-container/15 border border-secondary-container/40 text-secondary-container rounded-full px-2 py-0.5 font-label-sm text-label-sm text-[10px] uppercase tracking-widest">Líder</span>
+{% endif %}
+<span class="font-label-sm text-label-sm text-on-surface-variant/50 ml-auto">{{ c.created }}</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface break-words">{{ c.body }}</p>
+<div class="comment-reactions mt-1 flex flex-wrap items-center gap-1.5">
+{% for chip in c.reaction_chips %}
+<button type="button" class="reaction-chip{% if c.my_reaction == chip.key %} is-active{% endif %}" title="{{ chip.people|join:", " }}" onclick="react(null, {{ c.id }}, '{{ chip.key }}')">{{ chip.emoji }} {{ chip.count }}</button>
+{% endfor %}
+</div>
+<div class="flex items-center gap-1.5 pt-1 flex-wrap">
+{% if not is_reply %}
+<button type="button" class="font-label-sm text-label-sm text-on-surface-variant/70 hover:text-secondary-container transition-colors" onclick="startReply({{ c.id }}, '{{ c.user|escapejs }}')">Responder</button>
+{% endif %}
+{% for key, emoji in REACTIONS %}
+<button type="button" class="font-label-sm text-label-sm text-on-surface-variant/70 hover:text-secondary-container transition-colors" title="{{ key }}" onclick="react(null, {{ c.id }}, '{{ key }}')">{{ emoji }}</button>
+{% endfor %}
+{% if c.can_delete %}
+<button type="button" class="font-label-sm text-label-sm text-error ml-auto" onclick="deleteComment({{ c.id }})">Eliminar</button>
+{% endif %}
+</div>
+{% if c.replies %}
+<div class="comment-replies mt-1 flex flex-col gap-1.5 border-l-2 border-surface-variant/40 pl-3">
+{% for r in c.replies %}
+{% include "partials/challenge_comment.html" with c=r is_reply=True %}
+{% endfor %}
+</div>
+{% endif %}
+</div>

@@ -204,6 +204,84 @@ class Challenge(models.Model):
         return self.created_by.username or "—"
 
 
+class ChallengeComment(models.Model):
+    challenge = models.ForeignKey(
+        Challenge,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Desafío",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="challenge_comments",
+        verbose_name="Usuario",
+    )
+    body = models.CharField(
+        max_length=500, verbose_name="Comentario"
+    )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="replies",
+        null=True,
+        blank=True,
+        verbose_name="Comentario padre",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Enviado"
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+        verbose_name = "Comentario de desafío"
+        verbose_name_plural = "Comentarios de desafíos"
+
+    def __str__(self):
+        return f"{self.user}: {self.body[:30]}"
+
+
+class ChallengeCommentReaction(models.Model):
+    REACTIONS = [
+        ("like", "👍"),
+        ("heart", "❤️"),
+        ("fire", "🔥"),
+        ("wow", "😮"),
+        ("sad", "😢"),
+    ]
+
+    comment = models.ForeignKey(
+        ChallengeComment,
+        on_delete=models.CASCADE,
+        related_name="reactions",
+        verbose_name="Comentario",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="challenge_comment_reactions",
+        verbose_name="Usuario",
+    )
+    reaction = models.CharField(
+        max_length=10, choices=REACTIONS, verbose_name="Reacción"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Fecha"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["comment", "user"], name="unique_challenge_comment_user"
+            ),
+        ]
+        verbose_name = "Reacción de comentario"
+        verbose_name_plural = "Reacciones de comentarios"
+
+    def __str__(self):
+        return f"{self.user} → {self.get_reaction_display()} ({self.comment_id})"
+
+
 class Message(models.Model):
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
