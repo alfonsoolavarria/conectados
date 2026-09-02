@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .models import (
+    BibleBook,
+    BibleVerse,
     Cabin,
     Challenge,
     ChallengeComment,
@@ -658,3 +660,108 @@ class MuroDesafioTests(TestCase):
         self.assertFalse(
             ChallengeComment.objects.filter(pk=comment.pk).exists()
         )
+
+
+class LecturaTests(TestCase):
+    def setUp(self):
+        self.cabin = Cabin.objects.create(
+            number=5, gender="M", age_range="12-15", location="Principal"
+        )
+        self.camper_user = User.objects.create_user(
+            username="lector", password="pass12345"
+        )
+        Member.objects.create(
+            user=self.camper_user,
+            full_name="Lector",
+            role="camper",
+            cabin=self.cabin,
+            gender="M",
+        )
+        self.leader_user = User.objects.create_user(
+            username="lider", password="pass12345"
+        )
+        Member.objects.create(
+            user=self.leader_user,
+            full_name="Líder",
+            role="leader",
+            cabin=self.cabin,
+            gender="M",
+        )
+        self.other_user = User.objects.create_user(
+            username="otro", password="pass12345"
+        )
+        self.other_cabin = Cabin.objects.create(
+            number=6, gender="F", age_range="12-15", location="Otra"
+        )
+        Member.objects.create(
+            user=self.other_user,
+            full_name="Otra",
+            role="camper",
+            cabin=self.other_cabin,
+            gender="F",
+        )
+        self.libro = BibleBook.objects.create(
+            number=43, name="Juan", abbreviation="Jn",
+            testament="NT", total_chapters=4,
+        )
+        BibleVerse.objects.create(
+            book=self.libro, chapter=1, verse=1, text="En el principio era el Verbo."
+        )
+        BibleVerse.objects.create(
+            book=self.libro, chapter=3, verse=16,
+            text="Porque de tal manera amó Dios al mundo.",
+        )
+        self.challenge = Challenge.objects.create(
+            cabin=self.cabin,
+            body="Leer Juan",
+            duration_days=5,
+            created_by=self.camper_user,
+            has_reading=True,
+            bible_book=self.libro,
+            chapter_start=1,
+            chapter_end=4,
+        )
+
+    def test_lectura_para_dia_avanza_y_reinicia(self):
+        self.assertEqual(self.challenge.lectura_para_dia(1)[1], 1)
+        self.assertEqual(self.challenge.lectura_para_dia(2)[1], 2)
+        self.assertEqual(self.challenge.lectura_para_dia(4)[1], 4)
+        self.assertEqual(self.challenge.lectura_para_dia(5)[1], 1)
+
+    def test_lectura_sin_reading_devuelve_none(self):
+        ch = Challenge.objects.create(
+            cabin=self.cabin, body="sin lectura", duration_days=5, has_reading=False
+        )
+        self.assertIsNone(ch.lectura_para_dia(1))
+
+    def test_lectura_view_renders_capitulo(self):
+        self.client.force_login(self.camper_user)
+        url = reverse("lectura", args=[self.challenge.pk])
+        response = self.client.get(url, {"chapter": 3})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Juan 3")
+        self.assertContains(response, "Porque de tal manera amó Dios al mundo.")
+
+    def test_lectura_view_redirige_otra_cabina(self):
+        self.client.force_login(self.other_user)
+        response = self.client.get(reverse("lectura", args=[self.challenge.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("home"))
+
+    def test_desafio_con_reading_creado_desde_post(self):
+        self.client.force_login(self.leader_user)
+        url = reverse("challenge", args=[self.cabin.pk])
+        response = self.client.post(url, {
+            "body": "Nuevo desafío",
+            "duration_days": "10",
+            "has_reading": "1",
+            "bible_book": str(self.libro.pk),
+            "chapter_start": "2",
+            "chapter_end": "3",
+        })
+        self.assertEqual(response.status_code, 302)
+        ch = Challenge.objects.get(body="Nuevo desafío")
+        self.assertTrue(ch.has_reading)
+        self.assertEqual(ch.bible_book, self.libro)
+        self.assertEqual(ch.chapter_start, 2)
+        self.assertEqual(ch.chapter_end, 3)

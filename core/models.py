@@ -151,6 +151,23 @@ class Challenge(models.Model):
         default=30,
         verbose_name="Duración (días)",
     )
+    has_reading = models.BooleanField(
+        default=False, verbose_name="Incluye lectura bíblica"
+    )
+    bible_book = models.ForeignKey(
+        "BibleBook",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="challenges",
+        verbose_name="Libro de la Biblia",
+    )
+    chapter_start = models.PositiveSmallIntegerField(
+        null=True, blank=True, verbose_name="Capítulo inicial"
+    )
+    chapter_end = models.PositiveSmallIntegerField(
+        null=True, blank=True, verbose_name="Capítulo final"
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -202,6 +219,37 @@ class Challenge(models.Model):
         if member is not None and member.full_name:
             return member.full_name
         return self.created_by.username or "—"
+
+    @property
+    def capitulos_disponibles(self):
+        if not self.has_reading or not self.bible_book_id:
+            return 0
+        total = self.bible_book.total_chapters
+        inicio = self.chapter_start or 1
+        fin = self.chapter_end or total
+        return max(0, fin - inicio + 1)
+
+    def lectura_para_dia(self, dia):
+        """Devuelve (libro, capitulo) para el 'dia' (1-indexado) del desafío.
+        Avanza un capítulo por día desde chapter_start y reinicia al llegar
+        al final del rango, siguiendo la lógica 'un capítulo por día'.
+        """
+        if not self.has_reading or not self.bible_book_id:
+            return None
+        total = self.bible_book.total_chapters
+        inicio = self.chapter_start or 1
+        fin = self.chapter_end or total
+        rango = fin - inicio + 1
+        if rango <= 0:
+            return None
+        desplazamiento = (dia - 1) % rango
+        return self.bible_book, inicio + desplazamiento
+
+    def lectura_hoy(self):
+        dia = self.dias_transcurridos
+        if dia <= 0:
+            return None
+        return self.lectura_para_dia(dia)
 
 
 class ChallengeComment(models.Model):
@@ -409,3 +457,62 @@ class PhotoReaction(models.Model):
 
     def __str__(self):
         return f"{self.user} → {self.get_reaction_display()} ({self.photo})"
+
+
+class BibleBook(models.Model):
+    TESTAMENTS = [
+        ("AT", "Antiguo Testamento"),
+        ("NT", "Nuevo Testamento"),
+    ]
+
+    number = models.PositiveSmallIntegerField(
+        unique=True, verbose_name="Número del libro"
+    )
+    name = models.CharField(
+        max_length=100, unique=True, verbose_name="Nombre"
+    )
+    abbreviation = models.CharField(
+        max_length=10, blank=True, default="", verbose_name="Abreviatura"
+    )
+    testament = models.CharField(
+        max_length=2, choices=TESTAMENTS, verbose_name="Testamento"
+    )
+    total_chapters = models.PositiveSmallIntegerField(
+        default=0, verbose_name="Total de capítulos"
+    )
+
+    class Meta:
+        ordering = ["number"]
+        verbose_name = "Libro de la Biblia"
+        verbose_name_plural = "Libros de la Biblia"
+
+    def __str__(self):
+        return self.name
+
+
+class BibleVerse(models.Model):
+    book = models.ForeignKey(
+        BibleBook,
+        on_delete=models.CASCADE,
+        related_name="verses",
+        verbose_name="Libro",
+    )
+    chapter = models.PositiveSmallIntegerField(verbose_name="Capítulo")
+    verse = models.PositiveSmallIntegerField(verbose_name="Versículo")
+    text = models.TextField(verbose_name="Texto")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["book", "chapter", "verse"], name="unique_book_chapter_verse"
+            ),
+        ]
+        ordering = ["book", "chapter", "verse"]
+        verbose_name = "Versículo"
+        verbose_name_plural = "Versículos"
+
+    def __str__(self):
+        return f"{self.book.name} {self.chapter}:{self.verse}"
+
+    def referencia(self):
+        return f"{self.book.name} {self.chapter}:{self.verse}"

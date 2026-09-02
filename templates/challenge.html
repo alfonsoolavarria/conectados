@@ -48,12 +48,83 @@
 </div>
 <span class="font-label-sm text-label-sm text-on-surface-variant">El desafío estará activo desde hoy hasta cumplirse el plazo seleccionado.</span>
 </label>
+<!-- Lectura bíblica -->
+<div class="flex flex-col gap-3 border-t border-surface-variant pt-4">
+<label class="flex items-center gap-3 cursor-pointer">
+<input type="checkbox" id="id_has_reading" name="has_reading" value="1" onchange="toggleReading()" class="w-5 h-5 rounded border-outline-variant text-secondary-container focus:ring-secondary-container focus:ring-2 bg-surface-container-low"/>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Incluir lectura bíblica diaria</span>
+</label>
+<div id="reading-options" class="hidden flex-col gap-4">
+<label for="id_bible_book" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Libro de la Biblia</span>
+<div class="relative">
+<select id="id_bible_book" name="bible_book" onchange="updateChapters()" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 cursor-pointer">
+<option value="">Selecciona un libro (Reina-Valera 1960)…</option>
+{% for b in libros %}
+<option value="{{ b.pk }}" data-chapters="{{ b.total_chapters }}">{{ b.name }}</option>
+{% endfor %}
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input type="checkbox" id="id_read_all" checked onchange="toggleRange()" class="w-5 h-5 rounded border-outline-variant text-secondary-container focus:ring-secondary-container focus:ring-2 bg-surface-container-low"/>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Leer todo el libro</span>
+</label>
+<div id="chapter-range" class="hidden grid-cols-2 gap-3">
+<label for="id_chapter_start" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Desde capítulo</span>
+<input type="number" id="id_chapter_start" name="chapter_start" min="1" value="1" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50"/>
+</label>
+<label for="id_chapter_end" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Hasta capítulo</span>
+<input type="number" id="id_chapter_end" name="chapter_end" min="1" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50"/>
+</label>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Se asignará un capítulo por día, comenzando y avanzando hasta cubrir todo el rango.</span>
+</div>
+</div>
 <button type="submit" class="inline-flex items-center justify-center gap-2 bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider rounded-full px-6 py-3 hover:shadow-[0_0_20px_rgba(250,189,0,0.3)] active:scale-95 transition-all duration-200 w-fit">
 <span class="material-symbols-outlined text-[18px]">flag</span>
             Guardar desafío
         </button>
 </form>
 </section>
+<script>
+function toggleReading() {
+    var on = document.getElementById('id_has_reading').checked;
+    var el = document.getElementById('reading-options');
+    el.classList.toggle('hidden', !on);
+    el.classList.toggle('flex', on);
+    if (on) updateChapters();
+}
+function toggleRange() {
+    var all = document.getElementById('id_read_all').checked;
+    var el = document.getElementById('chapter-range');
+    el.classList.toggle('hidden', all);
+    el.classList.toggle('grid', !all);
+    if (all) updateChapters();
+}
+function updateChapters() {
+    var total = totalForBook('id_bible_book');
+    var start = document.getElementById('id_chapter_start');
+    var end = document.getElementById('id_chapter_end');
+    start.max = total;
+    end.max = total;
+    if (document.getElementById('id_read_all').checked) {
+        start.value = 1;
+        end.value = total;
+    } else {
+        if (start.value > total || !start.value) start.value = 1;
+        if (end.value > total || !end.value) end.value = total;
+    }
+}
+function totalForBook(selId) {
+    var sel = document.getElementById(selId);
+    var opt = sel.options[sel.selectedIndex];
+    return opt && opt.getAttribute('data-chapters') ? parseInt(opt.getAttribute('data-chapters'), 10) || 1 : 1;
+}
+</script>
 {% if current %}
 <!-- Modal de confirmación -->
 <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -121,7 +192,7 @@ function confirmSubmit(e) { return true; }
 <span class="font-label-sm text-label-sm text-on-surface-variant">Por {{ ch.author_name }}</span>
 </div>
 <div class="flex items-center gap-3">
-<button type="button" data-edit-pk="{{ ch.pk }}" data-edit-body="{{ ch.body|escapejs }}" data-edit-duration="{{ ch.duration_days }}" onclick="openEditModal(this)" class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary-container hover:text-secondary-fixed transition-colors">
+<button type="button" data-edit-pk="{{ ch.pk }}" data-edit-body="{{ ch.body|escapejs }}" data-edit-duration="{{ ch.duration_days }}" data-edit-has-reading="{{ ch.has_reading|yesno:'1,0' }}" data-edit-book="{{ ch.bible_book_id|default:'' }}" data-edit-start="{{ ch.chapter_start|default:'' }}" data-edit-end="{{ ch.chapter_end|default:'' }}" onclick="openEditModal(this)" class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary-container hover:text-secondary-fixed transition-colors">
 <span class="material-symbols-outlined text-[16px]">edit</span> Editar
         </button>
 <a class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary-container hover:text-secondary-fixed transition-colors" href="{% url 'challenge_historial' ch.pk %}">
@@ -164,6 +235,41 @@ function confirmSubmit(e) { return true; }
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
 </div>
 </label>
+<!-- Lectura bíblica (editar) -->
+<div class="flex flex-col gap-3 border-t border-surface-variant pt-3">
+<label class="flex items-center gap-3 cursor-pointer">
+<input type="checkbox" id="edit_has_reading" name="has_reading" value="1" onchange="toggleEditReading()" class="w-5 h-5 rounded border-outline-variant text-secondary-container focus:ring-secondary-container focus:ring-2 bg-surface-container-low"/>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Incluir lectura bíblica diaria</span>
+</label>
+<div id="edit-reading-options" class="hidden flex-col gap-3">
+<label for="edit_bible_book" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Libro de la Biblia</span>
+<div class="relative">
+<select id="edit_bible_book" name="bible_book" onchange="updateEditChapters()" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 cursor-pointer">
+<option value="">Selecciona un libro (Reina-Valera 1960)…</option>
+{% for b in libros %}
+<option value="{{ b.pk }}" data-chapters="{{ b.total_chapters }}">{{ b.name }}</option>
+{% endfor %}
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input type="checkbox" id="edit_read_all" checked onchange="toggleEditRange()" class="w-5 h-5 rounded border-outline-variant text-secondary-container focus:ring-secondary-container focus:ring-2 bg-surface-container-low"/>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Leer todo el libro</span>
+</label>
+<div id="edit-chapter-range" class="hidden grid-cols-2 gap-3">
+<label for="edit_chapter_start" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Desde capítulo</span>
+<input type="number" id="edit_chapter_start" name="chapter_start" min="1" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50"/>
+</label>
+<label for="edit_chapter_end" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Hasta capítulo</span>
+<input type="number" id="edit_chapter_end" name="chapter_end" min="1" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50"/>
+</label>
+</div>
+</div>
+</div>
 <div class="flex items-center gap-3 justify-end mt-2">
 <button type="button" onclick="closeEditModal()" class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface border border-outline-variant rounded-full px-4 py-2 transition-colors">
                 Cancelar
@@ -183,11 +289,54 @@ function openEditModal(btn) {
     document.getElementById('edit-challenge-id').value = pk;
     document.getElementById('edit-body').value = body;
     document.getElementById('edit-duration').value = duration;
+    // Lectura bíblica
+    var hasReading = btn.getAttribute('data-edit-has-reading') === '1';
+    document.getElementById('edit_has_reading').checked = hasReading;
+    toggleEditReading();
+    var bookVal = btn.getAttribute('data-edit-book') || '';
+    document.getElementById('edit_bible_book').value = bookVal;
+    var start = btn.getAttribute('data-edit-start') || '1';
+    var end = btn.getAttribute('data-edit-end') || '';
+    document.getElementById('edit_chapter_start').value = start;
+    document.getElementById('edit_chapter_end').value = end;
+    updateEditChapters();
+    // "Leer todo el libro" si no hay rango definido
+    var readAll = !end;
+    document.getElementById('edit_read_all').checked = readAll;
+    toggleEditRange();
     document.getElementById('edit-challenge-form').action = '/desafio-editar/' + pk + '/';
     document.getElementById('edit-modal').classList.remove('hidden');
 }
 function closeEditModal() {
     document.getElementById('edit-modal').classList.add('hidden');
+}
+function toggleEditReading() {
+    var on = document.getElementById('edit_has_reading').checked;
+    var el = document.getElementById('edit-reading-options');
+    el.classList.toggle('hidden', !on);
+    el.classList.toggle('flex', on);
+    if (on) updateEditChapters();
+}
+function toggleEditRange() {
+    var all = document.getElementById('edit_read_all').checked;
+    var el = document.getElementById('edit-chapter-range');
+    el.classList.toggle('hidden', all);
+    el.classList.toggle('grid', !all);
+    if (all) updateEditChapters();
+}
+function updateEditChapters() {
+    var total = totalForBook('edit_bible_book');
+    var start = document.getElementById('edit_chapter_start');
+    var end = document.getElementById('edit_chapter_end');
+    start.max = total;
+    end.max = total;
+    if (document.getElementById('edit_read_all').checked) {
+        start.value = 1;
+        end.value = total;
+    } else {
+        if (start.value > total || !start.value) start.value = 1;
+        if (end.value > total || !end.value) end.value = total;
+    }
 }
 </script>
 {% endblock %}

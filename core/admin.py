@@ -1,6 +1,8 @@
 from django.contrib import admin
 
 from .models import (
+    BibleBook,
+    BibleVerse,
     Cabin,
     Challenge,
     ChallengeComment,
@@ -42,9 +44,24 @@ class MessageAdmin(admin.ModelAdmin):
 
 @admin.register(Challenge)
 class ChallengeAdmin(admin.ModelAdmin):
-    list_display = ("cabin", "body", "created_by", "created_at")
-    list_filter = ("cabin", "created_at")
+    list_display = ("cabin", "body", "has_reading", "created_by", "created_at")
+    list_filter = ("cabin", "has_reading", "created_at")
     search_fields = ("body", "created_by__username", "created_by__email")
+
+
+@admin.register(BibleBook)
+class BibleBookAdmin(admin.ModelAdmin):
+    list_display = ("number", "name", "abbreviation", "testament", "total_chapters")
+    search_fields = ("name", "abbreviation")
+    list_filter = ("testament",)
+
+
+@admin.register(BibleVerse)
+class BibleVerseAdmin(admin.ModelAdmin):
+    list_display = ("book", "chapter", "verse", "text")
+    search_fields = ("text", "book__name")
+    list_filter = ("book",)
+    autocomplete_fields = ("book",)
 
 
 @admin.register(ChallengeComment)

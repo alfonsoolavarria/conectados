@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Conectados 3.0 - Lectura{% endblock %}
+{% block content %}
+<!-- Botón regresar -->
+<section>
+<a class="inline-flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors duration-200" href="{% url 'muro_desafio' challenge.id %}">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Regresar al desafío
+        </a>
+</section>
+<!-- Encabezado -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<span class="w-11 h-11 rounded-xl bg-secondary-container/15 border border-secondary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-container">menu_book</span>
+</span>
+<div class="flex flex-col">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+{% if libro %}{{ libro.name }} {{ capitulo }}{% else %}Lectura bíblica{% endif %}
+</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Reina-Valera 1960</p>
+</div>
+</div>
+{% if capitulo_dia and capitulo == capitulo_dia %}
+<div class="inline-flex items-center gap-2 bg-secondary-container/15 border border-secondary-container/40 rounded-full px-3 py-1 w-fit">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-secondary-fixed uppercase tracking-widest">Lectura de hoy</span>
+</div>
+{% endif %}
+</section>
+{% if libro %}
+<section class="bg-surface-container relative overflow-hidden border border-surface-variant rounded-xl p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+<div class="circuit-line"></div>
+<div class="relative z-10 flex flex-col gap-5">
+{% if capitulos|length > 1 %}
+<label for="id-chapter" class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Elegir capítulo</span>
+<div class="relative">
+<select id="id-chapter" onchange="window.location.href='?chapter=' + this.value" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 pr-10 font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container/50 cursor-pointer">
+{% for c in capitulos %}
+<option value="{{ c }}" {% if c == capitulo %}selected{% endif %}>{{ libro.name }} {{ c }}</option>
+{% endfor %}
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</label>
+{% endif %}
+<div class="flex flex-col gap-0 divide-y divide-surface-variant/40">
+{% for v in versiculos %}
+<div class="flex items-start gap-3 py-3">
+<span class="w-7 h-7 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0 font-label-sm text-label-sm text-secondary-container">{{ v.verse }}</span>
+<p class="font-body-md text-body-md text-on-surface">{{ v.text }}</p>
+</div>
+{% empty %}
+<p class="font-body-md text-body-md text-on-surface-variant">No hay versículos para este capítulo.</p>
+{% endfor %}
+</div>
+</div>
+</section>
+{% else %}
+<section class="bg-surface-container border border-surface-variant rounded-xl p-8 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">Este desafío no incluye lectura bíblica.</p>
+</section>
+{% endif %}
+{% endblock %}
+{% block bottom_nav %}{% endblock bottom_nav %}

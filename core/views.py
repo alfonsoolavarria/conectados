@@ -18,6 +18,8 @@ from django.views.decorators.http import require_POST
 
 from .forms import LoginForm
 from .models import (
+    BibleBook,
+    BibleVerse,
     Cabin,
     Challenge,
     ChallengeComment,
@@ -84,6 +86,45 @@ def _desafio_activo(challenges):
         if ch.is_active:
             return ch
     return None
+
+
+def _cita_diaria(challenge):
+    """Cita de lectura del día para el desafío activo (o None)."""
+    if challenge is None or not challenge.has_reading or not challenge.bible_book_id:
+        return None
+    lectura = challenge.lectura_hoy()
+    if lectura is None:
+        return None
+    libro, capitulo = lectura
+    return {
+        "libro": libro.name,
+        "chapter": capitulo,
+        "ref": f"{libro.name} {capitulo}",
+        "dia": challenge.dias_transcurridos,
+        "capitulos": challenge.capitulos_disponibles,
+    }
+
+
+def _lectura_desde_post(post):
+    """Lee los campos de lectura del POST y devuelve valores normalizados."""
+    if post.get("has_reading") != "1":
+        return False, None, None, None
+    libro_id = post.get("bible_book")
+    libro = BibleBook.objects.filter(pk=libro_id).first() if libro_id else None
+    if libro is None:
+        return False, None, None, None
+    total = libro.total_chapters
+    try:
+        inicio = int(post.get("chapter_start")) if post.get("chapter_start") else 1
+    except (TypeError, ValueError):
+        inicio = 1
+    try:
+        fin = int(post.get("chapter_end")) if post.get("chapter_end") else total
+    except (TypeError, ValueError):
+        fin = total
+    inicio = max(1, min(inicio, total))
+    fin = max(inicio, min(fin or total, total))
+    return True, libro, inicio, fin
 
 
 def _color_info(cid):
@@ -184,14 +225,25 @@ def _mes_dias(user, ref_date=None, challenge=None):
                 is_completed=True,
             ).values_list("date", flat=True)
         )
+        con_lectura = challenge.has_reading and challenge.bible_book_id
         dias = []
         for i in range(challenge.duration_days):
             dia_date = inicio + timedelta(days=i)
+            lectura = None
+            if con_lectura:
+                par = challenge.lectura_para_dia(i + 1)
+                if par is not None:
+                    libro, capitulo = par
+                    lectura = {
+                        "ref": f"{libro.abbreviation or libro.name} {capitulo}",
+                        "chapter": capitulo,
+                    }
             dias.append({
                 "number": dia_date.day,
                 "date": dia_date,
                 "completed": dia_date in completados,
                 "is_today": dia_date == hoy,
+                "lectura": lectura,
             })
         return {
             "days": dias,
@@ -238,6 +290,7 @@ def home(request):
         is_completed=True
     ).count()
     context["challenge"] = active_challenge
+    context["lectura_hoy"] = _cita_diaria(active_challenge)
     feed_items, feed_cache = _feed_fotos(request.user, limit=12)
     context["feed_items"] = feed_items
     context["feed_cache"] = feed_cache
@@ -502,6 +555,7 @@ def challenge(request, cabin_id):
     if request.method == "POST":
         body = request.POST.get("body", "").strip()
         duration = int(request.POST.get("duration_days", 30))
+        has_reading, libro, inicio, fin = _lectura_desde_post(request.POST)
         if body:
             active_old = _desafio_activo(cab.challenges.all())
             if active_old is not None:
@@ -512,6 +566,8 @@ def challenge(request, cabin_id):
             Challenge.objects.create(
                 cabin=cab, body=body, created_by=request.user,
                 duration_days=duration,
+                has_reading=has_reading, bible_book=libro,
+                chapter_start=inicio, chapter_end=fin,
             )
         return HttpResponseRedirect(reverse("home"))
 
@@ -524,6 +580,7 @@ def challenge(request, cabin_id):
             "cab": cab,
             "current": active,
             "challenges": challenges,
+            "libros": BibleBook.objects.all(),
         },
     )
 
@@ -537,10 +594,18 @@ def edit_challenge(request, challenge_id):
     if request.method == "POST":
         body = request.POST.get("body", "").strip()
         duration = int(request.POST.get("duration_days", ch.duration_days))
+        has_reading, libro, inicio, fin = _lectura_desde_post(request.POST)
         if body:
             ch.body = body
             ch.duration_days = duration
-            ch.save(update_fields=["body", "duration_days"])
+            ch.has_reading = has_reading
+            ch.bible_book = libro
+            ch.chapter_start = inicio
+            ch.chapter_end = fin
+            ch.save(update_fields=[
+                "body", "duration_days", "has_reading", "bible_book",
+                "chapter_start", "chapter_end",
+            ])
     return HttpResponseRedirect(reverse("challenge", args=[ch.cabin_id]))
 
 
@@ -672,6 +737,15 @@ def muro_desafio(request, challenge_id):
     total = request.user.commitments.filter(
         date__gte=ch.fecha_inicio, date__lte=ch.fecha_fin, is_completed=True
     ).count()
+
+    lectura_hoy = _cita_diaria(ch)
+    versiculos_hoy = []
+    libro = ch.bible_book
+    if lectura_hoy is not None and libro is not None:
+        versiculos_hoy = list(
+            libro.verses.filter(chapter=lectura_hoy["chapter"]).order_by("verse")
+        )
+
     return render(
         request,
         "muro_desafio.html",
@@ -684,6 +758,8 @@ def muro_desafio(request, challenge_id):
             "es_lider": _es_lider(request.user),
             "current_user_id": request.user.id,
             "mi_progreso": total,
+            "lectura_hoy": lectura_hoy,
+            "versiculos_hoy": versiculos_hoy,
         },
     )
 
@@ -822,6 +898,46 @@ def mis_desafios(request):
         {
             "historial": historial,
             "cabin": cabin,
+        },
+    )
+
+
+@login_required
+def lectura(request, challenge_id):
+    ch = get_object_or_404(Challenge, pk=challenge_id)
+    member = getattr(request.user, "member", None)
+    if member is None or member.cabin_id != ch.cabin_id:
+        return HttpResponseRedirect(reverse("home"))
+
+    libro = ch.bible_book
+    capitulos = tuple(range(ch.chapter_start or 1, (ch.chapter_end or libro.total_chapters if libro else 0) + 1)) if ch.has_reading and libro else ()
+
+    hoy_lectura = ch.lectura_hoy()
+    capitulo_dia = hoy_lectura[1] if hoy_lectura else None
+
+    try:
+        capitulo_sel = int(request.GET.get("chapter") or capitulo_dia or capitulos[0])
+    except (ValueError, IndexError):
+        capitulo_sel = capitulo_dia or (capitulos[0] if capitulos else None)
+
+    versiculos = []
+    if libro is not None and capitulo_sel in capitulos:
+        versiculos = list(
+            libro.verses.filter(chapter=capitulo_sel).order_by("verse")
+        )
+
+    return render(
+        request,
+        "lectura.html",
+        {
+            "challenge": ch,
+            "cab": ch.cabin,
+            "libro": libro,
+            "capitulos": capitulos,
+            "capitulo": capitulo_sel,
+            "capitulo_dia": capitulo_dia,
+            "versiculos": versiculos,
+            "es_lider": _es_lider(request.user),
         },
     )
 

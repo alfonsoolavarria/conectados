@@ -35,6 +35,34 @@
 <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary-container">
 <span class="material-symbols-outlined text-[14px]">chat</span> <span id="total-comments">{{ total_comentarios }}</span> comentarios
 </span>
+{% if lectura_hoy %}
+<div class="flex flex-col">
+<button type="button" id="reading-toggle" onclick="toggleReadingAccordion()" class="inline-flex items-center gap-1.5 font-label-sm text-label-sm text-secondary-fixed hover:text-secondary-container transition-colors text-left" aria-expanded="false" aria-controls="reading-accordion">
+<span class="material-symbols-outlined text-[14px]">auto_stories</span> Lectura de hoy: {{ lectura_hoy.ref }}
+<span id="reading-chevron" class="material-symbols-outlined text-[16px] transition-transform duration-300">expand_more</span>
+</button>
+<div id="reading-accordion" class="hidden mt-3">
+<section class="bg-surface-container border border-surface-variant rounded-xl p-4 md:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+<div class="flex items-center justify-between gap-3 mb-3">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">{{ lectura_hoy.libro.name }} {{ lectura_hoy.chapter }}</h4>
+<a class="inline-flex items-center gap-1.5 font-label-sm text-label-sm text-secondary-fixed hover:text-secondary-container transition-colors" href="{% url 'lectura' challenge.id %}?chapter={{ lectura_hoy.chapter }}">
+<span class="material-symbols-outlined text-[16px]">open_in_new</span> Abrir completo
+</a>
+</div>
+<div class="flex flex-col gap-0 divide-y divide-surface-variant/40 max-h-72 overflow-y-auto pr-1">
+{% for v in versiculos_hoy %}
+<div class="flex items-start gap-3 py-3">
+<span class="w-7 h-7 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0 font-label-sm text-label-sm text-secondary-container">{{ v.verse }}</span>
+<p class="font-body-md text-body-md text-on-surface">{{ v.text }}</p>
+</div>
+{% empty %}
+<p class="font-body-md text-body-md text-on-surface-variant">No hay versículos para este capítulo.</p>
+{% endfor %}
+</div>
+</section>
+</div>
+</div>
+{% endif %}
 </div>
 </section>
 
@@ -274,6 +302,15 @@
         return String(s).replace(/[&<>"']/g, function (c) {
             return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
         });
+    }
+
+    window.toggleReadingAccordion = function () {
+        var box = document.getElementById('reading-accordion');
+        var chevron = document.getElementById('reading-chevron');
+        var btn = document.getElementById('reading-toggle');
+        var open = box.classList.toggle('hidden') === false;
+        if (chevron) chevron.textContent = open ? 'expand_less' : 'expand_more';
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 })();
 </script>

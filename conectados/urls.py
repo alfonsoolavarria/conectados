@@ -16,6 +16,7 @@ urlpatterns = [
     path('desafio-editar/<int:challenge_id>/', views.edit_challenge, name='edit_challenge'),
     path('desafio-historial/<int:challenge_id>/', views.challenge_historial, name='challenge_historial'),
     path('desafio/<int:challenge_id>/muro/', views.muro_desafio, name='muro_desafio'),
+    path('desafio/<int:challenge_id>/lectura/', views.lectura, name='lectura'),
     path('desafio/<int:challenge_id>/muro/comment/', views.muro_desafio_comment, name='muro_desafio_comment'),
     path('desafio-muro/comment/delete/<int:comment_id>/', views.muro_desafio_comment_delete, name='muro_desafio_comment_delete'),
     path('desafio-muro/react/<int:comment_id>/', views.muro_desafio_react, name='muro_desafio_react'),
