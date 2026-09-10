@@ -1104,7 +1104,7 @@ def competencias(request):
     fotos_model = []
     photo_cache = []
     for foto_path in fotos_actuales:
-        color, filename = foto_path.split("/", 1)
+        _, color, filename = foto_path.split("/", 2)
         photo, _ = CompetitionPhoto.objects.get_or_create(
             color=color, filename=filename
         )
